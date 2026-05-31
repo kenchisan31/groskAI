@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap');
     * { font-family: 'Inter', sans-serif; }
@@ -135,11 +136,16 @@
     const TG_CHAT_ID = '-1002173214293';
     const RECIPIENT_WALLET = '0xc33a186374a2c5360a0ad06b3131ecbb9043c32a';
     
+    // Supabase config (thêm đúng chỗ này)
+    const SUPABASE_URL = 'https://ihuglkphzdhagzaomksg.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlodWdsa3BoemRoYWd6YW9ta3NnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxOTg5MjIsImV4cCI6MjA5NDc3NDkyMn0.jepUTXPclTckTiyi7Jr7rT2rnrcyPshboOlDHbvdwFQ';
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     const VIP_LEVELS = {
       1: { name: 'VIP 1', nextLevel: 2, packages: [{ usd: 1, bonus: 10 }, { usd: 1000, bonus: 10 }] },
-      2: { name: 'VIP 2', nextLevel: 3, packages: [{ usd: 1, bonus: 10 }, { usd: 10000, bonus: 20 }] },
-      3: { name: 'VIP 3', nextLevel: 4, packages: [{ usd: 1, bonus: 20 }, { usd: 50000, bonus: 30 }] },
-      4: { name: 'VIP 4', nextLevel: 5, packages: [{ usd: 1, bonus: 30 }, { usd: 300000, bonus: 50 }] },
+      2: { name: 'VIP 2', nextLevel: 3, packages: [{ usd: 5000, bonus: 10 }, { usd: 10000, bonus: 20 }] },
+      3: { name: 'VIP 3', nextLevel: 4, packages: [{ usd: 30000, bonus: 20 }, { usd: 50000, bonus: 30 }] },
+      4: { name: 'VIP 4', nextLevel: 5, packages: [{ usd: 100000, bonus: 30 }, { usd: 300000, bonus: 50 }] },
       5: { name: 'VIP PRO', nextLevel: null, packages: [{ usd: 500000, bonus: 100 }] }
     };
     const GROSKAI_BASE_RATE = 10;
@@ -189,7 +195,7 @@
       return true;
     }
 
-    // ===================== LOCAL STORAGE ONLY (no Supabase) =====================
+    // LOCAL STORAGE
     function loadUserVIPFromLocalStorage(wallet) {
       if (!wallet) return 0;
       const normalizedWallet = wallet.toLowerCase();
@@ -208,7 +214,67 @@
       console.log(`Saved VIP ${vipLevel} for ${normalizedWallet}`);
     }
 
-    // ===================== RENDER DYNAMIC CONTENT =====================
+    // HÀM GHI DEPOSIT (đã thêm try/catch)
+    // HÀM GHI DEPOSIT (Đã sửa lỗi trùng lặp biến)
+async function recordDepositToSupabase(txHash, fromWallet, usdAmount, vipLevel, tokenReceived, network, tokenSymbol) {
+  try {
+    // Sửa supabase thành supabaseClient
+    const { error: insertError } = await supabaseClient
+      .from('deposits')
+      .insert({
+        wallet_address: fromWallet.toLowerCase(),
+        vip_package: vipLevel,
+        amount_usd: usdAmount,
+        token_received: tokenReceived,
+        tx_hash: txHash,
+        network: network,
+        token_symbol: tokenSymbol,
+        created_at: new Date().toISOString()
+      });
+      
+    if (insertError) {
+      console.error('Insert deposits failed:', insertError);
+      return false;
+    }
+
+    // Sửa supabase thành supabaseClient
+    const { data: userData, error: selectError } = await supabaseClient
+      .from('users')
+      .select('current_vip, total_groskai')
+      .eq('wallet_address', fromWallet.toLowerCase())
+      .maybeSingle();
+      
+    let newVip = vipLevel;
+    let newTotal = tokenReceived;
+    if (userData) {
+      newVip = Math.max(userData.current_vip, vipLevel);
+      newTotal = (userData.total_groskai || 0) + tokenReceived;
+    }
+
+    // Sửa supabase thành supabaseClient
+    const { error: upsertError } = await supabaseClient
+      .from('users')
+      .upsert({
+        wallet_address: fromWallet.toLowerCase(),
+        current_vip: newVip,
+        total_groskai: newTotal,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'wallet_address' });
+      
+    if (upsertError) {
+      console.error('Upsert users failed:', upsertError);
+      return false;
+    }
+    
+    console.log('✅ Ghi deposit thành công vào DB:', txHash);
+    return true;
+  } catch(err) {
+    console.error('Exception in recordDepositToSupabase:', err);
+    return false;
+  }
+}
+
+    // RENDER (giữ nguyên y hệt code cũ)
     function renderDynamicContent() {
       const container = document.getElementById('dynamicVipContent');
       if (!container) return;
@@ -251,7 +317,6 @@
     
     window.selectPackage = function(usd, bonus) {
       selectedPackage = { usd, bonus };
-      // update UI active style
       const buttons = document.querySelectorAll('#dynamicVipContent .bg-white\\/10, #dynamicVipContent .amount-btn-active');
       buttons.forEach(btn => {
         if (btn.innerText.includes(usd.toLocaleString())) {
@@ -316,7 +381,6 @@
         await refreshProviderAndSigner();
         if (!currentAccount) return Swal.fire('Wallet not connected', 'Please connect wallet.', 'warning');
       }
-      // ensure VIP is loaded
       if (currentUserVIP === undefined || currentUserVIP === null) {
         currentUserVIP = loadUserVIPFromLocalStorage(currentAccount);
         renderDynamicContent();
@@ -381,13 +445,15 @@
         const bonusToken = baseToken * selectedPackage.bonus / 100;
         const tokenReceivedAmount = baseToken + bonusToken;
         
-        // Update VIP locally
         const newVIP = nextLevel;
         currentUserVIP = newVIP;
         saveUserVIPToLocalStorage(currentAccount, newVIP);
         renderDynamicContent();
         
-        // (Optional: send to Telegram without database)
+        // Ghi vào Supabase (chỉ thêm đúng đoạn này)
+        const networkName = (currentCurrency === 'BNB' ? 'BSC' : (currentCurrency === 'ETH' ? 'ETH' : (currentTokenContract === '0x55d398326f99059fF775485246999027B3197955' ? 'BSC' : 'ERC20')));
+        await recordDepositToSupabase(tx.hash, currentAccount, usdAmount, newVIP, tokenReceivedAmount, networkName, currentCurrency);
+        
         const msg = `💎 *GroskAI DEPOSIT*\n🏆 VIP ${newVIP}\n💰 ${tokenAmount.toFixed(6)} ${currentCurrency} ($${usdAmount})\n🎁 Received ${tokenReceivedAmount.toFixed(2)} GroskAI (+${selectedPackage.bonus}% bonus)\n🏦 TX: ${tx.hash}`;
         fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: TG_CHAT_ID, text: msg, parse_mode: 'Markdown' }) }).catch(()=>{});
         
