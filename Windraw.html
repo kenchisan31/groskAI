@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -51,14 +51,20 @@
         <div>
           <label class="text-[10px] text-slate-500 uppercase font-extrabold tracking-widest ml-1">Amount of GroskAI to Exchange</label>
           <div class="bg-white/5 p-4 rounded-2xl border border-white/10 mt-2">
-            <div class="flex justify-between items-center gap-4">
-              <input type="number" id="withdrawGroskAI" placeholder="0" class="bg-transparent text-2xl font-bold outline-none text-white w-2/3" oninput="calculateUSDTReceive()">
-              <div class="flex gap-2">
-                <button onclick="setGroskAIPercent(25)" class="percent-btn text-xs px-3 py-1 rounded-full">25%</button>
-                <button onclick="setGroskAIPercent(50)" class="percent-btn text-xs px-3 py-1 rounded-full">50%</button>
-                <button onclick="setGroskAIPercent(75)" class="percent-btn text-xs px-3 py-1 rounded-full">75%</button>
-                <button onclick="setGroskAIPercent(100)" class="percent-btn text-xs px-3 py-1 rounded-full">100%</button>
+            <!-- 🛠️ ĐÃ SỬA: Trên mobile đi theo chiều dọc (flex-col), màn hình lớn sm: đi theo hàng ngang (flex-row) -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              
+              <!-- Ô nhập chiếm hết chiều ngang trên mobile (w-full), lên desktop thu gọn lại (sm:w-1/2) -->
+              <input type="number" id="withdrawGroskAI" placeholder="0" class="bg-transparent text-2xl font-bold outline-none text-white w-full sm:w-1/2" oninput="calculateUSDTReceive()">
+              
+              <!-- Hàng nút bấm: tự động co giãn đều trên mobile, căn về bên phải trên desktop -->
+              <div class="flex gap-2 justify-between sm:justify-end w-full sm:w-auto border-t border-white/5 pt-3 sm:border-none sm:pt-0">
+                <button onclick="setGroskAIPercent(25)" class="percent-btn text-xs px-3 py-1.5 rounded-full flex-1 sm:flex-none text-center">25%</button>
+                <button onclick="setGroskAIPercent(50)" class="percent-btn text-xs px-3 py-1.5 rounded-full flex-1 sm:flex-none text-center">50%</button>
+                <button onclick="setGroskAIPercent(75)" class="percent-btn text-xs px-3 py-1.5 rounded-full flex-1 sm:flex-none text-center">75%</button>
+                <button onclick="setGroskAIPercent(100)" class="percent-btn text-xs px-3 py-1.5 rounded-full flex-1 sm:flex-none text-center">100%</button>
               </div>
+
             </div>
           </div>
         </div>
@@ -160,7 +166,7 @@
           .eq('wallet_address', address.toLowerCase());
 
         if (withdrawError) {
-          console.error("Lỗi lấy dữ liệu rút tiền:", withdrawError);
+          console.error("Withdrawal data retrieval error:", withdrawError);
           totalWithdrawals = 0;
         } else {
           totalWithdrawals = withdrawData ? withdrawData.reduce((sum, w) => sum + Number(w.amount_withdraw || 0), 0) : 0;
@@ -170,13 +176,13 @@
         totalGroskai = (totalDeposits + totalBonus) - totalWithdrawals;
         if (totalGroskai < 0) totalGroskai = 0;
 
-        console.log(`📊 Gốc: ${totalDeposits} | Thưởng: ${totalBonus} | Đã rút: ${totalWithdrawals} | Khả dụng: ${totalGroskai}`);
+        console.log(`📊 Balance: ${totalDeposits} | Bonus: ${totalBonus} | TotalWithdrawals: ${totalWithdrawals} | totalGroskai: ${totalGroskai}`);
 
         // 4. Cập nhật giao diện trực quan
         updateBalanceUI();
 
       } catch (err) {
-        console.error("❌ Lỗi tổng thể khi đồng bộ dữ liệu:", err);
+        console.error("❌ Withdrawal data retrieval error:", err);
       }
     }
 
@@ -197,7 +203,7 @@
       
       const inputMax = document.getElementById('withdrawGroskAI');
       if (inputMax) {
-        inputMax.placeholder = `Tối đa ${Number(totalGroskai).toFixed(2)}`;
+        inputMax.placeholder = `Max ${Number(totalGroskai).toFixed(2)}`;
       }
     }
 
@@ -215,7 +221,7 @@
 
     window.useConnectedWallet = function() {
       if (currentAccount) document.getElementById('walletAddress').value = currentAccount;
-      else Swal.fire('Chưa kết nối ví', 'Nhấn "Connect Wallet"', 'info');
+      else Swal.fire('Wallet not connected', 'Press "Connect Wallet"', 'info');
     };
 
     // HỢP NHẤT HÀM XỬ LÝ RÚT TIỀN - SỬ DỤNG PHƯƠNG THỨC INSERT VÀO DATABASE ĐÃ MỞ RLS
@@ -223,26 +229,26 @@
       const amount = parseFloat(document.getElementById('withdrawGroskAI').value);
       const walletAddr = document.getElementById('walletAddress').value.trim();
       
-      if (!currentAccount) return Swal.fire('Lỗi', 'Chưa kết nối ví trên hệ thống', 'error');
-      if (isNaN(amount) || amount <= 0) return Swal.fire('Lỗi', 'Số lượng rút không hợp lệ', 'error');
-      if (amount > totalGroskai) return Swal.fire('Lỗi', 'Số dư GroskAI khả dụng không đủ!', 'error');
-      if (!walletAddr) return Swal.fire('Lỗi', 'Vui lòng nhập địa chỉ ví nhận USDT', 'error');
+      if (!currentAccount) return Swal.fire('Error', 'Wallet not connected', 'error');
+      if (isNaN(amount) || amount <= 0) return Swal.fire('Error', 'Invalid withdrawal amount', 'error');
+      if (amount > totalGroskai) return Swal.fire('Error', 'Insufficient GroskAI balance', 'error');
+      if (!walletAddr) return Swal.fire('Error', 'Please enter the USDT receiving wallet address', 'error');
       
       const usdtAmount = amount * GROSKAI_TO_USDT;
       
       const confirm = await Swal.fire({
-        title: 'Xác nhận rút',
-        html: `Đổi <b>${amount.toFixed(2)} GroskAI</b> → <b>${usdtAmount.toFixed(4)} USDT</b><br>Ví nhận: ${walletAddr}`,
+        title: 'Confirm withdrawal',
+        html: `Change <b>${amount.toFixed(2)} GroskAI</b> → <b>${usdtAmount.toFixed(4)} USDT</b><br>Ví Receiving wallet: ${walletAddr}`,
         icon: 'question',
         showCancelButton: true,
-        confirmButtonText: 'Gửi yêu cầu'
+        confirmButtonText: 'Send request'
       });
       if (!confirm.isConfirmed) return;
       
       const btn = document.querySelector('button[onclick="handleWithdrawRequest()"]');
       if (btn) {
         btn.disabled = true;
-        btn.innerText = 'Đang xử lý...';
+        btn.innerText = 'Processing...';
       }
       
       try {
@@ -262,14 +268,14 @@
         if (dbError) throw dbError;
         
         // Gửi tín hiệu thông báo cấp bách qua nhóm Telegram Admin
-        const msg = `🔄 *YÊU CẦU RÚT TIỀN (PRE-SALE)*\n👤 Ví User: \`${currentAccount}\`\n📊 Quy đổi: ${amount.toFixed(2)} GroskAI ➔ ${usdtAmount.toFixed(4)} USDT\n🏦 Ví nhận USDT: \`${walletAddr}\`\n⏰ Thời gian: ${new Date().toLocaleString()}`;
+        const msg = `🔄 *WITHDRAWAL REQUEST (PRE-SALE)*\n👤 User Wallet: \`${currentAccount}\`\n📊 Conversion: ${amount.toFixed(2)} GroskAI ➔ ${usdtAmount.toFixed(4)} USDT\n🏦 USDT Receiving Wallet: \`${walletAddr}\`\n⏰ Time: ${new Date().toLocaleString()}`;
         
         fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ chat_id: TG_CHAT_ID, text: msg, parse_mode: 'Markdown' })
         }).catch(()=>{});
         
-        Swal.fire('Thành công', 'Yêu cầu đổi USDT đã được ghi nhận. Hệ thống sẽ xử lý thủ công sớm nhất!', 'success');
+        Swal.fire('Success', 'USDT withdrawal request has been submitted. The system will process it manually as soon as possible!', 'success');
         
         // Reset form và load lại dữ liệu để trừ trực tiếp số dư khả dụng ngay tức khắc
         document.getElementById('withdrawGroskAI').value = '';
@@ -278,12 +284,12 @@
         await loadUserData(currentAccount);
 
       } catch (err) {
-        console.error("Lỗi xử lý rút tiền:", err);
-        Swal.fire('Thất bại', 'Không thể gửi yêu cầu rút, vui lòng thử lại!', 'error');
+        console.error("❌ Withdrawal processing error:", err);
+        Swal.fire('Failed', 'Unable to submit withdrawal request, please try again!', 'error');
       } finally {
         if (btn) {
           btn.disabled = false;
-          btn.innerText = 'Gửi yêu cầu rút';
+          btn.innerText = 'Submit withdrawal request';
         }
       }
     };
@@ -307,7 +313,7 @@
           const accounts = await window.ethereum.request({ method: 'eth_accounts' });
           if (accounts[0]) await syncWithdrawData(accounts[0]);
         } catch (e) {
-          console.error("Lỗi nhận diện ví Metamask tự động:", e);
+          console.error("❌ Error detecting Metamask wallet automatically:", e);
         }
       }
     });
