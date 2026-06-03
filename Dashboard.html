@@ -407,7 +407,11 @@
         function renderDynamicContent() {
             const container = document.getElementById('dynamicVipContent');
             if (!container) return;
-            const nextLevel = currentUserVIP + 1;
+            const currentBalance = parseFloat(document.getElementById('dashBalanceSpan')?.innerText || '0');
+            let nextLevel = currentUserVIP + 1;
+            if (currentBalance === 0 && currentUserVIP <= 1) {
+                nextLevel = 1; 
+            }
             if (nextLevel > 5) {
                 container.innerHTML = `<div class="text-center py-8"><i class="fas fa-trophy text-5xl text-yellow-500 mb-2"></i><p class="text-xl font-bold">You have completed all VIP levels!</p><p class="text-slate-400">Thank you for your support.</p></div>`;
                 document.getElementById('buyButton').disabled = true;
