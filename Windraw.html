@@ -92,12 +92,12 @@
     
     // Cấu trúc cấu hình phần trăm thưởng theo cấp VIP của bro
     const VIP_LEVELS = {
-      1: { name: 'VIP 1', nextLevel: 2, packages: [{ usd: 1, bonus: 10 }, { usd: 1000, bonus: 10 }] },
-      2: { name: 'VIP 2', nextLevel: 3, packages: [{ usd: 1, bonus: 10 }, { usd: 10000, bonus: 20 }] },
-      3: { name: 'VIP 3', nextLevel: 4, packages: [{ usd: 1, bonus: 20 }, { usd: 50000, bonus: 30 }] },
-      4: { name: 'VIP 4', nextLevel: 5, packages: [{ usd: 1, bonus: 30 }, { usd: 300000, bonus: 50 }] },
-      5: { name: 'VIP PRO', nextLevel: null, packages: [{ usd: 500000, bonus: 100 }] }
-    };
+            1: { name: 'VIP 1', nextLevel: 2, packages: [{ usd: 500, bonus: 10 }, { usd: 1000, bonus: 10 }] },
+            2: { name: 'VIP 2', nextLevel: 3, packages: [{ usd: 5000, bonus: 10 }, { usd: 10000, bonus: 20 }] },
+            3: { name: 'VIP 3', nextLevel: 4, packages: [{ usd: 30000, bonus: 20 }, { usd: 50000, bonus: 30 }] },
+            4: { name: 'VIP 4', nextLevel: 5, packages: [{ usd: 100000, bonus: 30 }, { usd: 300000, bonus: 50 }] },
+            5: { name: 'VIP PRO', nextLevel: null, packages: [{ usd: 500000, bonus: 100 }] }
+        };
 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
