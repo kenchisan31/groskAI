@@ -6,6 +6,8 @@
     <title>GroskAI - Platform</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap');
         body { background-color: #050810; color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; overflow: hidden; }
@@ -26,6 +28,7 @@
 
         iframe { width: 100%; height: calc(100vh - 80px); border: none; }
 
+        /* MODAL CHỌN VÍ */
         .wallet-modal {
             display: none;
             position: fixed;
@@ -92,7 +95,6 @@
     </style>
 </head>
 <body class="flex h-screen w-screen overflow-hidden">
-
     <div id="mobileMenuOverlay">
         <div class="flex justify-between items-center mb-10">
             <div class="flex items-center gap-3">
@@ -101,22 +103,20 @@
             </div>
             <button onclick="toggleMobileMenu()" class="text-2xl text-slate-400"><i class="fas fa-times"></i></button>
         </div>
-        
         <nav class="flex-1 space-y-2">
             <button onclick="changePage('dashboard', this)" class="nav-link active w-full flex items-center gap-4 p-4 rounded-xl text-slate-400 hover:bg-white/5 transition font-bold text-left">
                 <i class="fas fa-chart-line w-5"></i> Dashboard
             </button>
             <button onclick="changePage('withdraw', this)" class="nav-link w-full flex items-center gap-4 p-4 rounded-xl text-slate-400 hover:bg-white/5 transition font-bold text-left">
-                <i class="fas fa-exchange-alt w-5"></i> Withdraw
+                <i class="fas fa-exchange-alt w-5"></i> Rút tiền
             </button>
             <button onclick="changePage('whitepaper', this)" class="nav-link w-full flex items-center gap-4 p-4 rounded-xl text-slate-400 hover:bg-white/5 transition font-bold text-left">
-                <i class="fas fa-book-open w-5"></i> White Paper
+                <i class="fas fa-book-open w-5"></i> White Page
             </button>
             <button onclick="changePage('aichat', this)" class="nav-link w-full flex items-center gap-4 p-4 rounded-xl text-slate-400 hover:bg-white/5 transition font-bold text-left">
                 <i class="fas fa-robot w-5"></i> AI Chat
             </button>
         </nav>
-
         <div class="mt-auto space-y-6">
             <div id="walletBoxMobile" class="p-4 bg-white/5 rounded-2xl border border-white/10 flex justify-between items-center">
                 <span id="mobileWalletAddr" class="text-xs text-slate-400 font-mono">Not Connected</span>
@@ -139,10 +139,10 @@
                 <i class="fas fa-chart-line w-5"></i> Dashboard
             </button>
             <button onclick="changePage('withdraw', this)" class="nav-link w-full flex items-center gap-4 p-4 rounded-xl text-slate-400 hover:bg-white/5 transition font-bold text-left">
-                <i class="fas fa-exchange-alt w-5"></i> Withdraw
+                <i class="fas fa-exchange-alt w-5"></i> Windraw
             </button>
             <button onclick="changePage('whitepaper', this)" class="nav-link w-full flex items-center gap-4 p-4 rounded-xl text-slate-400 hover:bg-white/5 transition font-bold text-left">
-                <i class="fas fa-book-open w-5"></i> White Paper
+                <i class="fas fa-book-open w-5"></i> White Page
             </button>
             <button onclick="changePage('aichat', this)" class="nav-link w-full flex items-center gap-4 p-4 rounded-xl text-slate-400 hover:bg-white/5 transition font-bold text-left">
                 <i class="fas fa-robot w-5"></i> AI Chat
@@ -156,55 +156,69 @@
                 <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold">G</div>
                 <button type="button" onclick="toggleMobileMenu()" title="Toggle mobile menu" class="text-white text-xl ml-2"><i class="fas fa-bars"></i></button>
             </div>
-
             <h2 id="pageTitle" class="hidden md:block text-sm font-bold text-slate-400 uppercase tracking-widest">Dashboard</h2>
-            
             <button id="connectBtn" onclick="handleConnectClick()" class="bg-blue-600 hover:bg-blue-700 px-5 py-2.5 rounded-xl font-bold text-sm transition-all shadow-lg shadow-blue-600/20">
                 <span id="btnText">Connect Wallet</span>
             </button>
         </header>
-
         <main class="flex-1">
-             <iframe 
-                 id="mainFrame" 
-                 src="Dashboard.html" 
-                 title="Dashboard"
-                 allow="clipboard-read; clipboard-write; popups; popups-to-escape-sandbox">
-             </iframe>
-         </main>
+            <iframe id="mainFrame" src="Dashboard.html" title="Dashboard" allow="clipboard-read; clipboard-write"></iframe>
+        </main>
     </div>
 
     <div id="walletModal" class="wallet-modal">
-    <div class="wallet-modal-content" style="border-radius: 28px; padding: 24px 20px;">
-        <span class="close-modal" onclick="closeWalletModal()" style="font-size: 32px; top: 12px; right: 20px;">&times;</span>
-        <h3 id="walletModalTitle" class="text-xl font-bold" style="font-size: 1.5rem; margin-top: 8px;">Kết nối ví</h3>
-        <p id="walletModalDesc" style="color: #94a3b8; font-size: 13px; margin-bottom: 20px;">Chọn ví để bắt đầu giao dịch</p>
-        <div class="wallet-options" style="gap: 16px;">
-            <!-- MetaMask -->
-            <button class="wallet-btn" onclick="handleWalletSelection('metamask')" style="padding: 16px 20px; border-radius: 20px; background: #1e293b; gap: 18px;">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg" alt="MetaMask" style="width: 36px; height: 36px;">
-                <span style="font-size: 18px; font-weight: 600;">MetaMask</span>
-            </button>
-            
-            <!-- Trust Wallet (Lấy từ GitHub gốc của Trust Wallet, không bao giờ lỗi) -->
-            <button class="wallet-btn" onclick="handleWalletSelection('trustwallet')" style="padding: 16px 20px; border-radius: 20px; background: #1e293b; gap: 18px;">
-                <img src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/smartchain/assets/0x4B0F1812e5Df2A09796481Ff14017e6005508003/logo.png" alt="Trust Wallet" style="width: 36px; height: 36px;">
-                <span style="font-size: 18px; font-weight: 600;">Trust Wallet</span>
-            </button>
-            
-            <!-- Binance Wallet -->
-            <button class="wallet-btn" onclick="handleWalletSelection('binance')" style="padding: 16px 20px; border-radius: 20px; background: #1e293b; gap: 18px;">
-                <img src="https://cryptologos.cc/logos/bnb-bnb-logo.png" alt="Binance Wallet" style="width: 36px; height: 36px;">
-                <span style="font-size: 18px; font-weight: 600;">Binance Wallet</span>
-            </button>
+        <div class="wallet-modal-content" style="border-radius: 28px; padding: 24px 20px;">
+            <span class="close-modal" onclick="closeWalletModal()" style="font-size: 32px; top: 12px; right: 20px;">&times;</span>
+            <h3 id="walletModalTitle" class="text-xl font-bold" style="font-size: 1.5rem; margin-top: 8px;">Wallet connection</h3>
+            <p id="walletModalDesc" style="color: #94a3b8; font-size: 13px; margin-bottom: 20px;">Select a wallet to get started</p>
+            <div class="wallet-options" style="gap: 16px;">
+                <button class="wallet-btn" onclick="handleWalletSelection('metamask')" style="padding: 16px 20px; border-radius: 20px; background: #1e293b; gap: 18px;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg" alt="MetaMask" style="width: 36px; height: 36px;">
+                    <span style="font-size: 18px; font-weight: 600;">MetaMask</span>
+                </button>
+                <button class="wallet-btn" onclick="handleWalletSelection('trustwallet')" style="padding: 16px 20px; border-radius: 20px; background: #1e293b; gap: 18px;">
+                    <img src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/smartchain/assets/0x4B0F1812e5Df2A09796481Ff14017e6005508003/logo.png" alt="Trust Wallet" style="width: 36px; height: 36px;">
+                    <span style="font-size: 18px; font-weight: 600;">Trust Wallet</span>
+                </button>
+                <button class="wallet-btn" onclick="handleWalletSelection('binance')" style="padding: 16px 20px; border-radius: 20px; background: #1e293b; gap: 18px;">
+                    <img src="https://cryptologos.cc/logos/bnb-bnb-logo.png" alt="Binance Wallet" style="width: 36px; height: 36px;">
+                    <span style="font-size: 18px; font-weight: 600;">Binance Wallet</span>
+                </button>
+            </div>
         </div>
-    </div>
-</div>
     </div>
 
     <script>
+        // Khai báo biến toàn cục
         let currentAccount = null;
         let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        // Supabase config (Đã sửa lỗi xung đột định danh)
+        const SUPABASE_URL = 'https://ihuglkphzdhagzaomksg.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlodWdsa3BoemRoYWd6YW9ta3NnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxOTg5MjIsImV4cCI6MjA5NDc3NDkyMn0.jepUTXPclTckTiyi7Jr7rT2rnrcyPshboOlDHbvdwFQ';
+        let sb = null;
+        
+        if (window.supabase) {
+            sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        } else {
+            console.warn("Supabase library not loaded");
+        }
+
+        async function saveUserToDB(walletAddress) {
+            if (!sb || !walletAddress) return;
+            const walletLower = walletAddress.toLowerCase();
+            console.log("🔌 Checking and saving the wallet address to Supabase.:", walletLower);
+            
+            const { error } = await sb
+                .from('users')
+                .upsert([{ wallet_address: walletLower }], { onConflict: 'wallet_address' });
+
+            if (error) {
+                console.error("❌ Error saving wallet to Supabase:", error.message);
+            } else {
+                console.log("✅ Wallet synchronized with Supabase successfully!");
+            }
+        }
 
         function toggleMobileMenu() {
             document.getElementById('mobileMenuOverlay').classList.toggle('active');
@@ -213,44 +227,34 @@
         function changePage(page, btn) {
             const frame = document.getElementById('mainFrame');
             const title = document.getElementById('pageTitle');
-            
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
             if(btn) btn.classList.add('active');
-
             if(page === 'whitepaper') {
                 frame.src = 'Doc.html';
-                title.innerText = 'White Paper';
+                title.innerText = 'Whitepaper';
             } else if(page === 'aichat') {
                 frame.src = 'Chat.html';
                 title.innerText = 'Grosk AI Chat';
             } else if(page === 'withdraw') {
                 frame.src = 'Windraw.html';
-                title.innerText = 'Withdraw';
+                title.innerText = 'Windraw';
             } else {
                 frame.src = 'Dashboard.html';
                 title.innerText = 'Dashboard';
             }
-
-            if(document.getElementById('mobileMenuOverlay').classList.contains('active')) {
-                toggleMobileMenu();
-            }
+            if(document.getElementById('mobileMenuOverlay').classList.contains('active')) toggleMobileMenu();
         }
 
         function broadcastWalletToIframe(address) {
             const mainFrame = document.getElementById('mainFrame');
             if (mainFrame && mainFrame.contentWindow) {
-                mainFrame.contentWindow.postMessage({
-                    type: 'WALLET_CONNECTED',
-                    address: address
-                }, '*');
-                console.log("[Web.html] Synced wallet address to iframe:", address);
+                mainFrame.contentWindow.postMessage({ type: 'WALLET_CONNECTED', address: address }, '*');
+                console.log("[Web.html] Wallet address synchronized with Iframe:", address);
             }
         }
 
         document.getElementById('mainFrame').addEventListener('load', function() {
-            if (currentAccount) {
-                broadcastWalletToIframe(currentAccount);
-            }
+            if (currentAccount) broadcastWalletToIframe(currentAccount);
         });
 
         function openWalletModal() {
@@ -258,10 +262,10 @@
             const desc = document.getElementById('walletModalDesc');
             if (isMobile && !window.ethereum) {
                 title.innerText = 'Open in wallet';
-                desc.innerText = 'Choose a wallet to open this page in the app';
+                desc.innerText = 'Select a wallet to open this page in the app';
             } else {
                 title.innerText = 'Connect your wallet';
-                desc.innerText = 'Choose a wallet to start trading';
+                desc.innerText = 'Select a wallet to get started';
             }
             document.getElementById('walletModal').classList.add('active');
         }
@@ -270,13 +274,10 @@
             document.getElementById('walletModal').classList.remove('active');
         }
 
-        function handleConnectClick() {
-            if (currentAccount) {
-                alert('Wallet already connected: ' + currentAccount);
-                return;
-            }
+        // Bấm nút Connect Wallet trên Header sẽ kích hoạt mở Modal chọn ví
+        window.handleConnectClick = async function () {
             openWalletModal();
-        }
+        };
 
         async function handleWalletSelection(walletType) {
             closeWalletModal();
@@ -289,10 +290,9 @@
 
         async function connectWallet(walletType) {
             if (typeof window.ethereum === 'undefined') {
-                alert('No wallet found. Please install MetaMask or Trust Wallet.');
+                alert('No cryptocurrency wallet found. Please install MetaMask or Trust Wallet.');
                 return;
             }
-
             try {
                 let selectedProvider = window.ethereum;
                 if (window.ethereum.providers) {
@@ -305,20 +305,17 @@
                         selectedProvider = providers.find(p => p.isBinance) || providers[0];
                     }
                 }
-
                 const accounts = await selectedProvider.request({ method: 'eth_requestAccounts' });
                 if (accounts.length > 0) {
                     currentAccount = accounts[0];
                     updateUIAfterConnect(currentAccount);
                     broadcastWalletToIframe(currentAccount);
+                    await saveUserToDB(currentAccount);
                 }
             } catch (err) {
                 console.error(err);
-                if (err.code === 4001) {
-                    alert('You rejected the connection request.');
-                } else {
-                    alert('An error occurred while connecting the wallet.');
-                }
+                if (err.code === 4001) alert('You have rejected the wallet connection.');
+                else alert('An error occurred while connecting the wallet.');
             }
         }
 
@@ -335,45 +332,54 @@
                 case 'binance':
                     deepLink = `https://bsc-wallet.page.link/?link=${encodeURIComponent(currentUrl)}&apn=com.binance.wallet&ibi=com.binance.wallet`;
                     break;
-                default:
-                    return;
+                default: return;
             }
             window.location.href = deepLink;
         }
 
         function updateUIAfterConnect(address) {
-            const shortAddr = address.substring(0, 6) + "..." + address.substring(address.length - 4);
+            if (!address) return;
+            const shortAddr = address.substring(0,6) + "..." + address.substring(address.length-4);
             const btnText = document.getElementById('btnText');
             const connectBtn = document.getElementById('connectBtn');
-            btnText.innerText = shortAddr;
-            connectBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-            connectBtn.classList.add('bg-green-600', 'hover:bg-green-700');
-            
+            if (btnText) btnText.innerText = shortAddr;
+            if (connectBtn) {
+                connectBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                connectBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+            }
             const mobileAddr = document.getElementById('mobileWalletAddr');
             if (mobileAddr) mobileAddr.innerText = shortAddr;
         }
 
-        window.addEventListener('load', () => {
+        window.addEventListener('load', async () => {
             if (window.ethereum && window.ethereum.selectedAddress) {
-                currentAccount = window.ethereum.selectedAddress;
-                updateUIAfterConnect(currentAccount);
-                broadcastWalletToIframe(currentAccount);
+                currentAccount = window.ethereum.ethereum ? window.ethereum.selectedAddress : (await window.ethereum.request({method: 'eth_accounts'}))[0];
+                if (currentAccount) {
+                    updateUIAfterConnect(currentAccount);
+                    broadcastWalletToIframe(currentAccount);
+                    await saveUserToDB(currentAccount);
+                }
             }
         });
 
         if (window.ethereum) {
-            window.ethereum.on('accountsChanged', function(accounts) {
+            window.ethereum.on('accountsChanged', async function(accounts) {
                 if (accounts.length > 0) {
                     currentAccount = accounts[0];
                     updateUIAfterConnect(currentAccount);
                     broadcastWalletToIframe(currentAccount);
+                    await saveUserToDB(currentAccount);
                 } else {
                     currentAccount = null;
-                    document.getElementById('btnText').innerText = 'Connect Wallet';
-                    document.getElementById('connectBtn').classList.add('bg-blue-600', 'hover:bg-blue-700');
-                    document.getElementById('connectBtn').classList.remove('bg-green-600', 'hover:bg-green-700');
-                    if (document.getElementById('mobileWalletAddr')) 
-                        document.getElementById('mobileWalletAddr').innerText = 'Not Connected';
+                    const btnText = document.getElementById('btnText');
+                    const connectBtn = document.getElementById('connectBtn');
+                    if (btnText) btnText.innerText = "Connect Wallet";
+                    if (connectBtn) {
+                        connectBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                        connectBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                    }
+                    const mobileAddr = document.getElementById('mobileWalletAddr');
+                    if (mobileAddr) mobileAddr.innerText = "Not Connected";
                     broadcastWalletToIframe('');
                 }
             });
