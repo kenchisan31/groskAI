@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GroskAI · Buy VIP</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -267,7 +267,35 @@
             if (accounts.length > 0) currentAccount = accounts[0];
             return true;
         }
-
+        // ✨ HÀM ĐỒNG BỘ VIP VÀ SỐ DƯ REAL-TIME TỪ TRÊN DATABASE SUPABASE ✨
+        async function initWalletSession(address) {
+            if (!address) return;
+            currentAccount = address;
+            await refreshProviderAndSigner();
+            
+            try {
+                // 🔎 Đọc cấp độ VIP trực tiếp từ bảng 'users' trên Supabase
+                const { data: user, error: userError } = await sb
+                    .from('users')
+                    .select('current_vip')
+                    .eq('wallet_address', address.toLowerCase())
+                    .maybeSingle();
+                
+                if (!userError && user) {
+                    currentUserVIP = user.current_vip || 0;
+                } else {
+                    currentUserVIP = 0; // Nếu ví mới tinh chưa nạp bao giờ
+                }
+            } catch (err) {
+                console.error("❌ Lỗi lấy VIP từ DB, fallback sang LocalStorage:", err);
+                currentUserVIP = loadUserVIPFromLocalStorage(address);
+            }
+            
+            // Sau khi có thông tin VIP chuẩn từ DB, render giao diện và tính số dư liền
+            renderDynamicContent();
+            await updateDashboardBalance(address);
+        }
+        
         function loadUserVIPFromLocalStorage(wallet) {
             if (!wallet) return 0;
             const stored = localStorage.getItem(`vip_${wallet.toLowerCase()}`);
@@ -579,6 +607,7 @@
         setInterval(updatePrices, 30000);
         
         // ---- 8. Khởi tạo và lắng nghe sự kiện ----
+        // ---- 8. Khởi tạo và lắng nghe sự kiện ----
         window.addEventListener('load', async () => {
             const pendingToken = sessionStorage.getItem('pendingToken');
             if (pendingToken) {
@@ -593,7 +622,7 @@
                             currentTokenContract = tokenData.contract;
                             currentTokenDecimals = tokenData.decimals || 18;
                             document.getElementById('currentIcon').src = tokenData.icon;
-                            document.getElementById('currentNetworkIcon').src = netIcon;
+                            document.getElementById('currentNetworkIcon').src = tokenData.netIcon;
                             document.getElementById('currentText').innerHTML = tokenData.text;
                             document.getElementById('currencySelect').value = tokenData.symbol;
                             await refreshProviderAndSigner();
@@ -602,16 +631,13 @@
                     }
                 } catch(e) {}
             }
+            
             const ethLoaded = getEthProvider();
             if (ethLoaded) {
                 try {
                     const accounts = await ethLoaded.request({ method: 'eth_accounts' });
                     if (accounts.length > 0) {
-                        currentAccount = accounts[0];
-                        await refreshProviderAndSigner();
-                        currentUserVIP = loadUserVIPFromLocalStorage(currentAccount);
-                        renderDynamicContent();
-                        updateDashboardBalance(currentAccount); // 🟢 Tự động load số dư từ DB khi tải trang nếu đã có ví
+                        await initWalletSession(accounts[0]); // 🟢 Tự động đồng bộ chuẩn dữ liệu từ DB khi tải trang
                     }
                 } catch (err) { console.error(err); }
             }
@@ -622,11 +648,7 @@
         // Nhận message từ index.html để đồng bộ ví
         window.addEventListener('message', async (event) => {
             if (event.data?.type === 'WALLET_CONNECTED') {
-                currentAccount = event.data.address;
-                await refreshProviderAndSigner();
-                currentUserVIP = loadUserVIPFromLocalStorage(currentAccount);
-                renderDynamicContent();
-                updateDashboardBalance(currentAccount); // 🟢 Tự động load số dư từ DB khi nhận sự kiện đồng bộ ví
+                await initWalletSession(event.data.address); // 🟢 Tự động đồng bộ chuẩn dữ liệu từ DB khi nhận sự kiện kết nối ví
             }
         });
     })();
