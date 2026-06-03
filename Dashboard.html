@@ -186,11 +186,24 @@
             '0x1': { chainId: '0x1', chainName: 'Ethereum Mainnet', rpcUrls: ['https://eth.llamarpc.com', 'https://rpc.ankr.com/eth'], nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 }, blockExplorerUrls: ['https://etherscan.io/'] }
         };
 
-        function getEthProvider() { return window.ethereum; }
-
-        window.handleConnectClick = async function () {
+        function getEthProvider() { 
+            // Nếu chính nó có ví thì dùng luôn
+            if (window.ethereum) return window.ethereum;
+            
+            // Nếu không có, ngó lên xin ví từ trang cha (Web.html / index.html)
             try {
-                const eth = window.ethereum;
+                if (window.parent && window.parent.ethereum) {
+                    return window.parent.ethereum;
+                }
+            } catch (e) {
+                console.warn("Bị chặn Cross-Origin khi cố truy cập ví trang cha:", e);
+            }
+            return null;
+        }
+
+      window.handleConnectClick = async function () {
+            try {
+                const eth = getEthProvider(); // 🟢 Đổi từ window.ethereum thành getEthProvider()
 
                 if (!eth) {
                     return Swal.fire(
@@ -207,7 +220,7 @@
                 currentAccount = accounts[0];
 
                 await refreshProviderAndSigner();
-                updateDashboardBalance(currentAccount); // 🟢 Cập nhật số dư khi bấm kết nối ví
+                updateDashboardBalance(currentAccount); 
 
                 Swal.fire({
                     icon: 'success',
