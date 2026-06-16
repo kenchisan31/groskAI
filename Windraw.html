@@ -10,75 +10,102 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
-    * { font-family: 'Plus Jakarta Sans', sans-serif; }
-    body { background-color: #0b1020; color: #f1f5f9; margin: 0; padding: 0; overflow-x: hidden; }
-    .glass-card { background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(14px); border: 1px solid rgba(255, 255, 255, 0.08); }
-    .percent-btn { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); transition: all 0.2s; font-weight: 700; }
-    .percent-btn:hover { background: #3b82f6; border-color: #3b82f6; color: white; }
+    * { font-family: 'Plus Jakarta Sans', sans-serif; box-sizing: border-box; }
+    body {
+      background-color: #021a17;
+      background-image: radial-gradient(ellipse at 20% 0%, rgba(0,180,120,0.1) 0%, transparent 55%);
+      color: #e2f5f0;
+      margin: 0; padding: 0; overflow-x: hidden;
+    }
+    .glass-card {
+      background: rgba(2,40,32,0.65);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(0,200,140,0.18);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    .percent-btn {
+      background: rgba(0,200,140,0.07);
+      border: 1px solid rgba(0,200,140,0.18);
+      color: #a8d8c8;
+      transition: all 0.2s;
+      font-weight: 700;
+    }
+    .percent-btn:hover { background: rgba(0,200,140,0.22); border-color: rgba(0,220,140,0.5); color: #fff; }
     .hidden { display: none; }
     input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     input[type=number] { appearance: textfield; -webkit-appearance: textfield; -moz-appearance: textfield; }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #021a17; }
+    ::-webkit-scrollbar-thumb { background: #0d9f78; border-radius: 4px; }
   </style>
 </head>
 <body class="relative p-5 md:p-10 max-w-4xl mx-auto">
 
   <div class="text-center space-y-2 mb-8">
-    <h1 class="text-4xl font-black italic tracking-tighter">GroskAI <span class="text-green-400">Withdraw</span></h1>
-    <p class="text-slate-400 text-sm">Exchange GroskAI for USDT (manual process)</p>
+    <h1 class="text-4xl font-black italic tracking-tighter">Grosk<span style="color:#00e896;">AI</span> <span style="background:linear-gradient(135deg,#00e896,#00c8ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Withdraw</span></h1>
+    <p class="text-sm" style="color:#6aaa94;">Exchange GroskAI for USDT (manual process)</p>
   </div>
 
   <div class="max-w-xl mx-auto">
-    <div class="glass-card rounded-[2.5rem] p-6 md:p-8 space-y-7 border-white/10">
+    <div class="glass-card rounded-[2.5rem] p-6 md:p-8 space-y-7">
       <div>
-        <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">GroskAI Account Overview</h3>
+        <h3 class="text-xs font-black uppercase tracking-widest mb-4" style="color:#4a9a7a;">GroskAI Account Overview</h3>
         <div class="space-y-3 text-sm">
-          <div class="flex justify-between font-semibold"><span class="text-slate-400">Total Deposited</span><span id="totalDepositedSpan">0</span> GroskAI</div>
-          <div class="flex justify-between font-semibold"><span class="text-slate-400">Total Profit</span><span id="totalProfitSpan" class="text-green-400">+0</span> GroskAI</div>
-          <div class="flex justify-between font-semibold"><span class="text-slate-400">Total Withdrawn</span><span id="totalWithdrawnSpan">0</span> GroskAI</div>
-          <div class="flex justify-between font-bold text-base pt-2 border-t border-white/10"><span class="text-blue-300">Available</span><span id="balanceSpan" class="text-blue-400">0</span> GroskAI</div>
+          <div class="flex justify-between font-semibold"><span style="color:#6aaa94;">Total Deposited</span><span id="totalDepositedSpan">0</span> GroskAI</div>
+          <div class="flex justify-between font-semibold"><span style="color:#6aaa94;">Total Profit</span><span id="totalProfitSpan" style="color:#00e896;">+0</span> GroskAI</div>
+          <div class="flex justify-between font-semibold"><span style="color:#6aaa94;">Total Withdrawn</span><span id="totalWithdrawnSpan">0</span> GroskAI</div>
+          <div class="flex justify-between font-bold text-base pt-2" style="border-top:1px solid rgba(0,200,140,0.15);"><span style="color:#5de8b8;">Available</span><span id="balanceSpan" style="color:#00c896;">0</span> GroskAI</div>
         </div>
       </div>
       <div class="pt-2 space-y-5">
         <div>
-          <label class="text-[10px] text-slate-500 uppercase font-extrabold tracking-widest ml-1">Wallet Address to Receive USDT</label>
-          <div class="bg-white/5 p-4 rounded-2xl border border-white/10 mt-2 flex items-center gap-2">
-            <input type="text" id="walletAddress" placeholder="0x... or your wallet address" class="bg-transparent text-sm w-full outline-none text-white placeholder:text-slate-600 flex-1">
-            <button id="useConnectedWalletBtn" onclick="useConnectedWallet()" class="hidden bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 px-3 py-1.5 rounded-xl text-[11px] font-bold transition border border-blue-500/30 whitespace-nowrap">
+          <label class="text-[10px] uppercase font-extrabold tracking-widest ml-1" style="color:#4a9a7a;">Wallet Address to Receive USDT</label>
+          <div class="p-4 rounded-2xl mt-2 flex items-center gap-2" style="background:rgba(0,200,140,0.05);border:1px solid rgba(0,200,140,0.15);">
+            <input type="text" id="walletAddress" placeholder="0x... or your wallet address" class="bg-transparent text-sm w-full outline-none text-white flex-1" style="caret-color:#00e896;">
+            <button id="useConnectedWalletBtn" onclick="useConnectedWallet()" class="hidden px-3 py-1.5 rounded-xl text-[11px] font-bold transition whitespace-nowrap" style="background:rgba(0,200,140,0.15);color:#5de8b8;border:1px solid rgba(0,200,140,0.3);">
               <i class="fas fa-plug mr-1"></i> Use Connected Wallet
             </button>
           </div>
         </div>
         <div>
-          <label class="text-[10px] text-slate-500 uppercase font-extrabold tracking-widest ml-1">Amount of GroskAI to Exchange</label>
-          <div class="bg-white/5 p-4 rounded-2xl border border-white/10 mt-2">
-            <!-- 🛠️ ĐÃ SỬA: Trên mobile đi theo chiều dọc (flex-col), màn hình lớn sm: đi theo hàng ngang (flex-row) -->
+          <label class="text-[10px] uppercase font-extrabold tracking-widest ml-1" style="color:#4a9a7a;">Amount of GroskAI to Exchange</label>
+          <div class="p-4 rounded-2xl mt-2" style="background:rgba(0,200,140,0.05);border:1px solid rgba(0,200,140,0.15);">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              
-              <!-- Ô nhập chiếm hết chiều ngang trên mobile (w-full), lên desktop thu gọn lại (sm:w-1/2) -->
               <input type="number" id="withdrawGroskAI" placeholder="0" class="bg-transparent text-2xl font-bold outline-none text-white w-full sm:w-1/2" oninput="calculateUSDTReceive()">
-              
-              <!-- Hàng nút bấm: tự động co giãn đều trên mobile, căn về bên phải trên desktop -->
-              <div class="flex gap-2 justify-between sm:justify-end w-full sm:w-auto border-t border-white/5 pt-3 sm:border-none sm:pt-0">
+              <div class="flex gap-2 justify-between sm:justify-end w-full sm:w-auto pt-3 sm:pt-0" style="border-top:1px solid rgba(0,200,140,0.1);">
                 <button onclick="setGroskAIPercent(25)" class="percent-btn text-xs px-3 py-1.5 rounded-full flex-1 sm:flex-none text-center">25%</button>
                 <button onclick="setGroskAIPercent(50)" class="percent-btn text-xs px-3 py-1.5 rounded-full flex-1 sm:flex-none text-center">50%</button>
                 <button onclick="setGroskAIPercent(75)" class="percent-btn text-xs px-3 py-1.5 rounded-full flex-1 sm:flex-none text-center">75%</button>
                 <button onclick="setGroskAIPercent(100)" class="percent-btn text-xs px-3 py-1.5 rounded-full flex-1 sm:flex-none text-center">100%</button>
               </div>
-
             </div>
           </div>
         </div>
         <div class="space-y-2">
-          <label class="text-[10px] text-slate-500 uppercase font-extrabold tracking-widest ml-1">You will receive (USDT)</label>
-          <div class="bg-green-600/10 p-5 rounded-2xl border border-green-500/30">
+          <label class="text-[10px] uppercase font-extrabold tracking-widest ml-1" style="color:#4a9a7a;">You will receive (USDT)</label>
+          <div class="p-5 rounded-2xl" style="background:rgba(0,200,140,0.08);border:1px solid rgba(0,200,140,0.25);">
             <div class="flex items-center justify-between">
-              <input type="text" id="usdtReceive" readonly placeholder="0" class="bg-transparent text-2xl font-black w-full outline-none text-green-400">
-              <span class="text-[10px] font-bold text-green-500/80">USDT</span>
+              <input type="text" id="usdtReceive" readonly placeholder="0" class="bg-transparent text-2xl font-black w-full outline-none" style="color:#00e896;">
+              <span class="text-[10px] font-bold" style="color:#00c896;">USDT</span>
             </div>
-            <p id="networkHint" class="text-[9px] text-slate-400 mt-1">Exchange rate: 1 GroskAI = 0.1 USDT</p>
+            <p id="networkHint" class="text-[9px] mt-1" style="color:#4a9a7a;">Exchange rate: 1 GroskAI = 0.1 USDT</p>
           </div>
         </div>
-        <button onclick="handleWithdrawRequest()" class="w-full bg-slate-700 hover:bg-slate-600 p-5 rounded-2xl font-extrabold transition text-white text-lg uppercase italic tracking-wider">Submit Withdrawal Request</button>
+        <button id="submitWithdrawBtn" onclick="handleWithdrawRequest()" class="w-full p-5 rounded-2xl font-extrabold transition text-white text-lg uppercase italic tracking-wider" style="background:linear-gradient(135deg,#0d9f78,#0a6b52);box-shadow:0 0 18px rgba(0,200,140,0.25);">Submit Withdrawal Request</button>
+      </div>
+      <!-- EXTENSION BANNER -->
+      <div id="eventLockBanner" class="hidden text-center p-4 rounded-2xl text-sm font-semibold mb-2 space-y-2" style="background:linear-gradient(135deg,rgba(180,90,0,0.12),rgba(200,110,0,0.08));border:1px solid rgba(251,191,36,0.3);">
+        <div class="font-black text-base" style="color:#fbbf24;">⏳ EVENT EXTENSION NOTICE</div>
+        <div class="text-[11px] leading-relaxed" style="color:rgba(253,230,138,0.9);">
+          Currently, investors who contributed during this event have not yet had the chance to participate.
+          To ensure the rights of investors, GroskAI is extending the event by another <b style="color:#fde68a;">3 days</b>.
+        </div>
+        <div class="text-[10px]" style="color:rgba(251,191,36,0.6);">Time remaining until withdrawals reopen:</div>
+      </div>
+      <div id="withdrawLockNotice" class="hidden text-center p-3 rounded-xl text-xs font-semibold mb-4" style="background:rgba(0,200,140,0.06);border:1px solid rgba(0,200,140,0.2);color:#6aaa94;">
+        <i class="fas fa-hourglass-half mr-1" style="color:#00c896;"></i>
+        <span class="lock-label">Your tokens are currently in the staking period. Time remaining:</span>
+        <span id="withdrawCountdownText" class="font-bold ml-1" style="color:#fff;">00:00:00</span>
       </div>
     </div>
   </div>
@@ -90,233 +117,299 @@
     const SUPABASE_URL = 'https://ihuglkphzdhagzaomksg.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlodWdsa3BoemRoYWd6YW9ta3NnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxOTg5MjIsImV4cCI6MjA5NDc3NDkyMn0.jepUTXPclTckTiyi7Jr7rT2rnrcyPshboOlDHbvdwFQ';
     
-    // Cấu trúc cấu hình phần trăm thưởng theo cấp VIP của bro
-    const VIP_LEVELS = {
-            1: { name: 'VIP 1', nextLevel: 2, packages: [{ usd: 500, bonus: 10 }, { usd: 1000, bonus: 10 }] },
-            2: { name: 'VIP 2', nextLevel: 3, packages: [{ usd: 5000, bonus: 10 }, { usd: 10000, bonus: 20 }] },
-            3: { name: 'VIP 3', nextLevel: 4, packages: [{ usd: 30000, bonus: 20 }, { usd: 50000, bonus: 30 }] },
-            4: { name: 'VIP 4', nextLevel: 5, packages: [{ usd: 100000, bonus: 30 }, { usd: 300000, bonus: 50 }] },
-            5: { name: 'VIP PRO', nextLevel: null, packages: [{ usd: 500000, bonus: 100 }] }
-        };
-
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // Khai báo các biến lưu trữ toàn cục
-    let currentAccount = '';
-    let totalDeposits = 0;   // Tổng số GroskAI nạp gốc
-    let totalBonus = 0;      // Tổng số GroskAI nhận thêm (Bonus VIP)
-    let totalWithdrawals = 0;// Tổng số GroskAI đã yêu cầu rút
-    let totalGroskai = 0;    // Số dư khả dụng cuối cùng (Nạp gốc + Bonus - Rút)
-
-    // Hàm bổ trợ để các nút % tính toán không bị lỗi
-    window.getAvailableBalance = function() {
-      return totalGroskai;
+    const VIP_LEVELS = {
+        1: { name: 'SEEDS',   lockDays: 1, packages: [{ usd: 500,    bonus: 10 }, { usd: 1000,   bonus: 10 }] },
+        2: { name: 'ALIGNED', lockDays: 7, packages: [{ usd: 10000,  bonus: 12 }, { usd: 20000,  bonus: 15 }] },
+        3: { name: 'BUILDER', lockDays: 7, packages: [{ usd: 50000,  bonus: 25 }, { usd: 100000, bonus: 28 }, { usd: 300000, bonus: 35 }] },
+        4: { name: 'WHALES',  lockDays: 7, packages: [{ usd: 500000, bonus: 20 }] }
     };
+    const EVENT_CONFIG = {
+        active: true,
+        extraLockDays: 3,
+        vip3EarlyBonusPct: 15,
+        vip3EarlyBonusHours: 48
+    };
+    
+    let currentAccount = '';
+    let totalDeposits = 0;
+    let totalBonus = 0;
+    let totalWithdrawals = 0;
+    let totalGroskai = 0;
+    let isWithdrawLocked = false;
+    let isEventLocked = false;
+    let isExtensionLocked = false;
+    let withdrawLockInterval;
 
-    async function loadUserData(address) {
-      if (!address) return;
-      try {
-        // 1. Lấy dữ liệu nạp tiền từ bảng deposits (Kéo thêm lượng USD và gói VIP về để tính bonus)
-        const { data: depositsData, error: depositsError } = await supabaseClient
-          .from('deposits')
-          .select('token_received, amount_usd, vip_package')
-          .eq('wallet_address', address.toLowerCase());
-
-        if (depositsError) {
-          console.error("Lỗi lấy dữ liệu nạp tiền:", depositsError);
-          return;
-        }
-
-        // Reset lại bộ đếm trước khi tính toán vòng lặp
-        totalDeposits = 0;
-        totalBonus = 0;
-
-        if (depositsData) {
-          depositsData.forEach(d => {
-            const baseTokens = Number(d.token_received || 0);
-            totalDeposits += baseTokens;
-
-            // Thuật toán quét và đối chiếu mức cấu hình VIP_LEVELS để tính % thưởng động
-            const vipLevel = d.vip_package;
-            const amountUsd = Number(d.amount_usd || 0);
-
-            if (vipLevel && VIP_LEVELS[vipLevel]) {
-              const pkgs = VIP_LEVELS[vipLevel].packages;
-              
-              // Tìm gói phù hợp với số USD nạp vào (Sắp xếp giảm dần để lấy mốc cao nhất thỏa mãn)
-              const matchedPkg = pkgs
-                .filter(p => amountUsd >= p.usd)
-                .sort((a, b) => b.usd - a.usd)[0];
-              
-              const finalPkg = matchedPkg || pkgs[0]; // Mặc định lấy gói thấp nhất nếu ko khớp mốc nào
-
-              if (finalPkg) {
-                const bonusPercent = Number(finalPkg.bonus || 0); // Ví dụ: 10 (nghĩa là 10%)
-                const rowBonus = baseTokens * (bonusPercent / 100);
-                totalBonus += rowBonus;
-              }
+    async function checkWithdrawLock(address) {
+        if (!address) return;
+        try {
+            const { data, error } = await supabaseClient
+                .from('deposits')
+                .select('created_at, vip_package')
+                .ilike('wallet_address', address.toLowerCase())
+                .order('created_at', { ascending: true });
+            if (error) throw error;
+            const btn = document.getElementById('submitWithdrawBtn');
+            const notice = document.getElementById('withdrawLockNotice');
+            const countdownText = document.getElementById('withdrawCountdownText');
+            const eventBanner = document.getElementById('eventLockBanner');
+            if (!data || data.length === 0) {
+                isWithdrawLocked = false; isEventLocked = false; isExtensionLocked = false;
+                if (btn) { btn.disabled = false; btn.style.cssText = 'background:linear-gradient(135deg,#0d9f78,#0a6b52);box-shadow:0 0 18px rgba(0,200,140,0.25);'; btn.innerText = 'Submit Withdrawal Request'; }
+                if (notice) notice.classList.add('hidden');
+                if (eventBanner) eventBanner.classList.add('hidden');
+                return;
             }
-          });
-        }
-
-        // 2. Lấy tổng số GroskAI ĐÃ RÚT từ bảng withdrawals
-        const { data: withdrawData, error: withdrawError } = await supabaseClient
-          .from('withdrawals')
-          .select('amount_withdraw')
-          .eq('wallet_address', address.toLowerCase());
-
-        if (withdrawError) {
-          console.error("Withdrawal data retrieval error:", withdrawError);
-          totalWithdrawals = 0;
-        } else {
-          totalWithdrawals = withdrawData ? withdrawData.reduce((sum, w) => sum + Number(w.amount_withdraw || 0), 0) : 0;
-        }
-
-        // 3. TÍNH TOÁN SỐ DƯ KHẢ DỤNG: Tổng gốc + Tổng Bonus - Tổng rút
-        totalGroskai = (totalDeposits + totalBonus) - totalWithdrawals;
-        if (totalGroskai < 0) totalGroskai = 0;
-
-        console.log(`📊 Balance: ${totalDeposits} | Bonus: ${totalBonus} | TotalWithdrawals: ${totalWithdrawals} | totalGroskai: ${totalGroskai}`);
-
-        // 4. Cập nhật giao diện trực quan
-        updateBalanceUI();
-
-      } catch (err) {
-        console.error("❌ Withdrawal data retrieval error:", err);
-      }
+            let currentUnlockTime = 0;
+            for (const deposit of data) {
+                let ds = deposit.created_at;
+                if (!ds.endsWith('Z') && !ds.includes('+')) ds = ds.replace(' ', 'T') + 'Z';
+                const depositTime = new Date(ds).getTime();
+                if (isNaN(depositTime)) continue;
+                const lockDays = VIP_LEVELS[deposit.vip_package]?.lockDays || 1;
+                const unlockTime = depositTime + lockDays * 86400000;
+                if (unlockTime > currentUnlockTime) currentUnlockTime = unlockTime;
+            }
+            let extensionEndTime = null;
+            const vip2Deposit = data.find(d => d.vip_package === 2);
+            if (EVENT_CONFIG.active && vip2Deposit) {
+                let ds = vip2Deposit.created_at;
+                if (!ds.endsWith('Z') && !ds.includes('+')) ds = ds.replace(' ', 'T') + 'Z';
+                const vip2Time = new Date(ds).getTime();
+                extensionEndTime = vip2Time + (VIP_LEVELS[2].lockDays + EVENT_CONFIG.extraLockDays) * 86400000;
+                if (extensionEndTime > currentUnlockTime) currentUnlockTime = extensionEndTime;
+            }
+            if (withdrawLockInterval) clearInterval(withdrawLockInterval);
+            const updateWithdrawUI = () => {
+                const now = Date.now();
+                const timeLeft = currentUnlockTime - now;
+                const vip2UnlockTime = vip2Deposit ? (() => { let ds = vip2Deposit.created_at; if (!ds.endsWith('Z') && !ds.includes('+')) ds = ds.replace(' ','T')+'Z'; return new Date(ds).getTime() + VIP_LEVELS[2].lockDays * 86400000; })() : null;
+                const inExtension = !!(EVENT_CONFIG.active && extensionEndTime && now >= (vip2UnlockTime || 0) && now < extensionEndTime);
+                if (timeLeft > 0) {
+                    isWithdrawLocked = true; isEventLocked = false; isExtensionLocked = inExtension;
+                    if (btn) {
+                        btn.disabled = true;
+                        btn.style.cssText = inExtension ? 'background:rgba(180,90,0,0.2);color:#fbbf24;border:1px solid rgba(251,191,36,0.2);cursor:not-allowed;' : 'background:rgba(0,0,0,0.4);color:#4a7a6a;border:1px solid rgba(0,200,140,0.1);cursor:not-allowed;';
+                        btn.innerText = inExtension ? '⏳ Event Extension in Progress' : '🔒 Withdrawal Locked';
+                    }
+                    if (notice) {
+                        notice.classList.remove('hidden');
+                        const labelEl = notice.querySelector('.lock-label');
+                        if (labelEl) labelEl.innerText = inExtension ? '' : '⏳ Your tokens are currently in the staking period. Time remaining:';
+                    }
+                    if (eventBanner) inExtension ? eventBanner.classList.remove('hidden') : eventBanner.classList.add('hidden');
+                    const h = Math.floor(timeLeft / 3600000);
+                    const m = Math.floor((timeLeft % 3600000) / 60000);
+                    const s = Math.floor((timeLeft % 60000) / 1000);
+                    if (countdownText) countdownText.innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+                } else {
+                    isWithdrawLocked = false; isEventLocked = false; isExtensionLocked = false;
+                    if (btn) { btn.disabled = false; btn.style.cssText = 'background:linear-gradient(135deg,#0d9f78,#0a6b52);box-shadow:0 0 18px rgba(0,200,140,0.25);'; btn.innerText = 'Submit Withdrawal Request'; }
+                    if (notice) notice.classList.add('hidden');
+                    if (eventBanner) eventBanner.classList.add('hidden');
+                    clearInterval(withdrawLockInterval);
+                }
+            };
+            updateWithdrawUI();
+            withdrawLockInterval = setInterval(updateWithdrawUI, 1000);
+        } catch (err) { console.error("Lỗi kiểm tra lock rút tiền:", err); }
     }
 
-    // Hàm cập nhật chuẩn xác theo các ID hiển thị thật trên layout HTML của bro
+    window.getAvailableBalance = function() { return totalGroskai; };
+
+    async function loadUserData(address) {
+        if (!address) return;
+        try {
+            const { data: depositsData, error: depositsError } = await supabaseClient
+                .from('deposits')
+                .select('token_received, amount_usd, vip_package')
+                .eq('wallet_address', address.toLowerCase());
+            if (depositsError) throw depositsError;
+            totalDeposits = 0; totalBonus = 0;
+            if (depositsData) {
+                depositsData.forEach(d => {
+                    const baseTokens = Number(d.token_received || 0);
+                    totalDeposits += baseTokens;
+                    const vipLevel = d.vip_package;
+                    const amountUsd = Number(d.amount_usd || 0);
+                    if (vipLevel && VIP_LEVELS[vipLevel]) {
+                        const pkgs = VIP_LEVELS[vipLevel].packages;
+                        const matchedPkg = pkgs.filter(p => amountUsd >= p.usd).sort((a,b)=>b.usd - a.usd)[0];
+                        const finalPkg = matchedPkg || pkgs[0];
+                        if (finalPkg) {
+                            const bonusPercent = Number(finalPkg.bonus || 0);
+                            totalBonus += baseTokens * (bonusPercent / 100);
+                        }
+                    }
+                });
+            }
+            const { data: withdrawData, error: withdrawError } = await supabaseClient
+                .from('withdrawals')
+                .select('amount_withdraw, status')
+                .eq('wallet_address', address.toLowerCase());
+            if (withdrawError) { totalWithdrawals = 0; } else {
+                totalWithdrawals = (withdrawData || []).reduce((sum, w) => sum + Number(w.amount_withdraw || 0), 0);
+                const pendingTx = (withdrawData || []).filter(w => w.status === 'pending');
+                if (pendingTx.length > 0) console.log("User đang có lệnh rút chờ duyệt!");
+            }
+            totalGroskai = (totalDeposits + totalBonus) - totalWithdrawals;
+            if (totalGroskai < 0) totalGroskai = 0;
+            updateBalanceUI();
+        } catch (err) { console.error("❌ Withdrawal data retrieval error:", err); }
+    }
+
     function updateBalanceUI() {
-      if (document.getElementById('totalDepositedSpan')) {
-        document.getElementById('totalDepositedSpan').innerText = Number(totalDeposits).toFixed(2);
-      }
-      if (document.getElementById('totalProfitSpan')) {
-        document.getElementById('totalProfitSpan').innerText = `+${Number(totalBonus).toFixed(2)}`;
-      }
-      if (document.getElementById('totalWithdrawnSpan')) {
-        document.getElementById('totalWithdrawnSpan').innerText = Number(totalWithdrawals).toFixed(2);
-      }
-      if (document.getElementById('balanceSpan')) {
-        document.getElementById('balanceSpan').innerText = Number(totalGroskai).toFixed(2);
-      }
-      
-      const inputMax = document.getElementById('withdrawGroskAI');
-      if (inputMax) {
-        inputMax.placeholder = `Max ${Number(totalGroskai).toFixed(2)}`;
-      }
+        if (document.getElementById('totalDepositedSpan')) document.getElementById('totalDepositedSpan').innerText = Number(totalDeposits).toFixed(2);
+        if (document.getElementById('totalProfitSpan')) document.getElementById('totalProfitSpan').innerText = `+${Number(totalBonus).toFixed(2)}`;
+        if (document.getElementById('totalWithdrawnSpan')) document.getElementById('totalWithdrawnSpan').innerText = Number(totalWithdrawals).toFixed(2);
+        if (document.getElementById('balanceSpan')) document.getElementById('balanceSpan').innerText = Number(totalGroskai).toFixed(2);
+        const inputMax = document.getElementById('withdrawGroskAI');
+        if (inputMax) inputMax.placeholder = `Max ${Number(totalGroskai).toFixed(2)}`;
     }
 
     window.calculateUSDTReceive = function() {
-      const groskai = parseFloat(document.getElementById('withdrawGroskAI').value) || 0;
-      document.getElementById('usdtReceive').value = (groskai * GROSKAI_TO_USDT).toFixed(4);
+        const groskai = parseFloat(document.getElementById('withdrawGroskAI').value) || 0;
+        document.getElementById('usdtReceive').value = (groskai * GROSKAI_TO_USDT).toFixed(4);
     };
-
     window.setGroskAIPercent = function(percent) {
-      const available = getAvailableBalance();
-      const val = (available * percent / 100).toFixed(2);
-      document.getElementById('withdrawGroskAI').value = val;
-      calculateUSDTReceive();
-    };
-
-    window.useConnectedWallet = function() {
-      if (currentAccount) document.getElementById('walletAddress').value = currentAccount;
-      else Swal.fire('Wallet not connected', 'Press "Connect Wallet"', 'info');
-    };
-
-    // HỢP NHẤT HÀM XỬ LÝ RÚT TIỀN - SỬ DỤNG PHƯƠNG THỨC INSERT VÀO DATABASE ĐÃ MỞ RLS
-    window.handleWithdrawRequest = async function() {
-      const amount = parseFloat(document.getElementById('withdrawGroskAI').value);
-      const walletAddr = document.getElementById('walletAddress').value.trim();
-      
-      if (!currentAccount) return Swal.fire('Error', 'Wallet not connected', 'error');
-      if (isNaN(amount) || amount <= 0) return Swal.fire('Error', 'Invalid withdrawal amount', 'error');
-      if (amount > totalGroskai) return Swal.fire('Error', 'Insufficient GroskAI balance', 'error');
-      if (!walletAddr) return Swal.fire('Error', 'Please enter the USDT receiving wallet address', 'error');
-      
-      const usdtAmount = amount * GROSKAI_TO_USDT;
-      
-      const confirm = await Swal.fire({
-        title: 'Confirm withdrawal',
-        html: `Change <b>${amount.toFixed(2)} GroskAI</b> → <b>${usdtAmount.toFixed(4)} USDT</b><br>Ví Receiving wallet: ${walletAddr}`,
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'Send request'
-      });
-      if (!confirm.isConfirmed) return;
-      
-      const btn = document.querySelector('button[onclick="handleWithdrawRequest()"]');
-      if (btn) {
-        btn.disabled = true;
-        btn.innerText = 'Processing...';
-      }
-      
-      try {
-        // Ghi nhận trực tiếp lệnh rút tiền vào bảng withdrawals (Chờ admin duyệt cơm)
-        const { error: dbError } = await supabaseClient
-          .from('withdrawals')
-          .insert([
-            { 
-              wallet_address: currentAccount.toLowerCase(), 
-              amount_withdraw: amount, 
-              usdt_amount: usdtAmount,     
-              network: 'BSC', // Tùy biến hoặc có thể thêm thẻ chọn mạng lưới nếu cần
-              status: 'pending'
-            }
-          ]);
-
-        if (dbError) throw dbError;
-        
-        // Gửi tín hiệu thông báo cấp bách qua nhóm Telegram Admin
-        const msg = `🔄 *WITHDRAWAL REQUEST (PRE-SALE)*\n👤 User Wallet: \`${currentAccount}\`\n📊 Conversion: ${amount.toFixed(2)} GroskAI ➔ ${usdtAmount.toFixed(4)} USDT\n🏦 USDT Receiving Wallet: \`${walletAddr}\`\n⏰ Time: ${new Date().toLocaleString()}`;
-        
-        fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ chat_id: TG_CHAT_ID, text: msg, parse_mode: 'Markdown' })
-        }).catch(()=>{});
-        
-        Swal.fire('Success', 'USDT withdrawal request has been submitted. The system will process it manually as soon as possible!', 'success');
-        
-        // Reset form và load lại dữ liệu để trừ trực tiếp số dư khả dụng ngay tức khắc
-        document.getElementById('withdrawGroskAI').value = '';
-        document.getElementById('walletAddress').value = '';
+        const available = getAvailableBalance();
+        const val = (available * percent / 100).toFixed(2);
+        document.getElementById('withdrawGroskAI').value = val;
         calculateUSDTReceive();
-        await loadUserData(currentAccount);
+    };
+    window.useConnectedWallet = function() {
+        if (currentAccount) document.getElementById('walletAddress').value = currentAccount;
+        else Swal.fire('Wallet not connected', 'Press "Connect Wallet"', 'info');
+    };
 
-      } catch (err) {
-        console.error("❌ Withdrawal processing error:", err);
-        Swal.fire('Failed', 'Unable to submit withdrawal request, please try again!', 'error');
-      } finally {
-        if (btn) {
-          btn.disabled = false;
-          btn.innerText = 'Submit withdrawal request';
+    // ========== KYC ==========
+    async function isKYCVerified(walletAddress) {
+        if (!walletAddress) return false;
+        try {
+            const { data, error } = await supabaseClient
+                .from('kyc_verifications')
+                .select('status')
+                .eq('wallet_address', walletAddress.toLowerCase())
+                .maybeSingle();
+            if (error) throw error;
+            return data?.status === 'approved';
+        } catch (err) { console.warn("KYC check failed:", err); return false; }
+    }
+
+    function showKYCPopup() {
+        Swal.fire({
+            title: '⛔ Money laundering risk detection',
+            html: `<div style="text-align:left; color:#e2f5f0;">
+                      <p style="font-weight:bold; margin-bottom:12px;">requires KYC verification</p>
+                      <p style="font-size:13px; opacity:0.9;">Please complete Identity Verification to continue withdrawal.</p>
+                   </div>`,
+            icon: 'error',
+            background: '#0a1f1b',
+            color: '#ffb347',
+            confirmButtonText: '📄 Verify KYC Now',
+            confirmButtonColor: '#0d9f78',
+            showCancelButton: true,
+            cancelButtonText: 'Cancel',
+            cancelButtonColor: '#4a6a5a'
+        }).then((result) => {
+            if (result.isConfirmed) window.location.href = `kyc-verification.html?wallet=${currentAccount}`;
+        });
+    }
+
+    // ========== RÚT TIỀN CHÍNH (SAU LOCK + KYC) ==========
+    window.handleWithdrawRequest = async function() {
+        if (isWithdrawLocked) {
+            if (isExtensionLocked) {
+                Swal.fire({
+                    title: '⏳ Event Extension in Progress',
+                    html: `Currently, investors who contributed during this event have not yet had the chance to participate.<br><br>
+                           To ensure the rights of investors, GroskAI is extending the event by another <b>3 days</b>.<br><br>
+                           <span style="color:#fbbf24;">Please check the countdown timer for the exact unlock time.</span>`,
+                    icon: 'info',
+                    background: '#031e1a',
+                    color: '#e2f5f0',
+                    confirmButtonColor: '#0d9f78',
+                    confirmButtonText: 'Understood'
+                });
+            } else {
+                Swal.fire({
+                    title: '🔒 Withdrawal Locked',
+                    text: 'Your tokens are currently in the staking period. Please wait until the lock expires.',
+                    icon: 'warning',
+                    background: '#031e1a',
+                    color: '#e2f5f0',
+                    confirmButtonColor: '#0d9f78'
+                });
+            }
+            return;
         }
-      }
+        const kycOk = await isKYCVerified(currentAccount);
+        if (!kycOk) { showKYCPopup(); return; }
+
+        const amount = parseFloat(document.getElementById('withdrawGroskAI').value);
+        const walletAddr = document.getElementById('walletAddress').value.trim();
+        if (!currentAccount) return Swal.fire('Error', 'Wallet not connected', 'error');
+        if (isNaN(amount) || amount <= 0) return Swal.fire('Error', 'Invalid withdrawal amount', 'error');
+        if (amount > totalGroskai) return Swal.fire('Error', 'Insufficient GroskAI balance', 'error');
+        if (!walletAddr) return Swal.fire('Error', 'Please enter the USDT receiving wallet address', 'error');
+        const usdtAmount = amount * GROSKAI_TO_USDT;
+        const confirm = await Swal.fire({
+            title: 'Confirm withdrawal',
+            html: `Change <b>${amount.toFixed(2)} GroskAI</b> → <b>${usdtAmount.toFixed(4)} USDT</b><br>Receiving wallet: ${walletAddr}`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Send request'
+        });
+        if (!confirm.isConfirmed) return;
+        const btn = document.querySelector('button[onclick="handleWithdrawRequest()"]');
+        if (btn) { btn.disabled = true; btn.innerText = 'Processing...'; }
+        try {
+            const { error: dbError } = await supabaseClient
+                .from('withdrawals')
+                .insert([{
+                    wallet_address: currentAccount.toLowerCase(),
+                    amount_withdraw: amount,
+                    usdt_amount: usdtAmount,
+                    network: 'BSC',
+                    status: 'pending'
+                }]);
+            if (dbError) throw dbError;
+            const msg = `🔄 *WITHDRAWAL REQUEST (PRE-SALE)*\n👤 User Wallet: \`${currentAccount}\`\n📊 Conversion: ${amount.toFixed(2)} GroskAI ➔ ${usdtAmount.toFixed(4)} USDT\n🏦 USDT Receiving Wallet: \`${walletAddr}\`\n⏰ Time: ${new Date().toLocaleString()}`;
+            fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: TG_CHAT_ID, text: msg, parse_mode: 'Markdown' }) }).catch(()=>{});
+            Swal.fire('Success', 'USDT withdrawal request has been submitted. The system will process it manually as soon as possible!', 'success');
+            document.getElementById('withdrawGroskAI').value = '';
+            document.getElementById('walletAddress').value = '';
+            calculateUSDTReceive();
+            await loadUserData(currentAccount);
+        } catch (err) {
+            console.error("❌ Withdrawal processing error:", err);
+            Swal.fire('Failed', 'Unable to submit withdrawal request, please try again!', 'error');
+        } finally {
+            if (btn) { btn.disabled = false; btn.innerText = 'Submit Withdrawal Request'; }
+        }
     };
 
     async function syncWithdrawData(address) {
-      if (!address) return;
-      currentAccount = address;
-      await loadUserData(address);
-      const shortAddr = address.slice(0,6)+'...'+address.slice(-4);
-      document.getElementById('walletAddress').placeholder = shortAddr;
-      document.getElementById('useConnectedWalletBtn').classList.remove('hidden');
+        if (!address) return;
+        currentAccount = address;
+        await loadUserData(address);
+        await checkWithdrawLock(address);
+        const shortAddr = address.slice(0,6)+'...'+address.slice(-4);
+        document.getElementById('walletAddress').placeholder = shortAddr;
+        document.getElementById('useConnectedWalletBtn').classList.remove('hidden');
     }
-    
     window.addEventListener('message', async (e) => {
-      if (e.data?.type === 'WALLET_CONNECTED') await syncWithdrawData(e.data.address);
+        if (e.data?.type === 'WALLET_CONNECTED') await syncWithdrawData(e.data.address);
     });
-
     window.addEventListener('load', async () => {
-      if (window.ethereum) {
-        try {
-          const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-          if (accounts[0]) await syncWithdrawData(accounts[0]);
-        } catch (e) {
-          console.error("❌ Error detecting Metamask wallet automatically:", e);
+        if (window.ethereum) {
+            try {
+                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                if (accounts[0]) await syncWithdrawData(accounts[0]);
+            } catch (e) { console.error("❌ Error detecting Metamask:", e); }
         }
-      }
     });
-  </script>
+</script>
 </body>
 </html>
