@@ -7,6 +7,7 @@
     { "src": "/Doc.html", "dest": "/Doc.html" },
     { "src": "/Windraw.html", "dest": "/Windraw.html" },
     { "src": "/Chat.html", "dest": "/Chat.html" },
+    { "src": "/kyc-verification.html", "dest": "/kyc-verification.html" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
