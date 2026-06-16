@@ -10,9 +10,7 @@
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        * {
-            -webkit-tap-highlight-color: transparent;
-        }
+        * { -webkit-tap-highlight-color: transparent; }
         body {
             background: #021a17;
             color: #e2f5f0;
@@ -31,7 +29,7 @@
             border-radius: 32px;
         }
         .network-option {
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(0,0,0,0.3);
             border-radius: 60px;
             padding: 10px 16px;
             display: flex;
@@ -41,11 +39,7 @@
             transition: all 0.2s ease;
             border: 1px solid transparent;
         }
-        .network-option.active {
-            background: linear-gradient(135deg, rgba(13,159,120,0.25), rgba(10,107,82,0.2));
-            border-color: #0d9f78;
-            box-shadow: 0 0 8px rgba(0,200,140,0.3);
-        }
+        .network-option.active { background: linear-gradient(135deg, rgba(13,159,120,0.25), rgba(10,107,82,0.2)); border-color: #0d9f78; box-shadow: 0 0 8px rgba(0,200,140,0.3); }
         .network-option.bnb.active { border-color: #f0b90b; }
         .network-option.eth.active { border-color: #627eea; }
         .transfer-btn {
@@ -68,7 +62,7 @@
             position: fixed;
             z-index: 9999;
             inset: 0;
-            background: rgba(2, 16, 14, 0.96);
+            background: rgba(2,16,14,0.96);
             justify-content: center;
             align-items: center;
         }
@@ -110,8 +104,6 @@
         }
         .wallet-btn:hover { background: rgba(0,200,140,0.15); }
         .wallet-btn img { width: 32px; height: 32px; }
-        /* Fix cho mobile */
-        .break-all { word-break: break-all; }
         @media (max-width: 480px) {
             .glass-card { border-radius: 28px; padding: 20px !important; }
             .network-option { padding: 8px 12px; }
@@ -150,26 +142,23 @@
             </div>
         </div>
 
-        <!-- Network selector with logos (styled cards) -->
+        <!-- Network selector -->
         <div>
             <div class="text-[10px] font-bold uppercase text-[#fbbf24] mb-2 flex items-center gap-2">
                 <i class="fas fa-globe"></i> Select Network
             </div>
             <div class="grid grid-cols-2 gap-3">
-                <!-- BNB Option -->
                 <div id="networkBsc" class="network-option bnb flex flex-col items-center justify-center text-center p-3 rounded-xl bg-black/30" onclick="selectNetwork('bsc')">
                     <img src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/smartchain/info/logo.png" class="w-8 h-8 mb-1" alt="BNB">
                     <span class="text-sm font-bold">BNB Chain</span>
                     <span class="text-[9px] text-[#7ab8a8]">BEP-20 USDT</span>
                 </div>
-                <!-- ETH Option -->
                 <div id="networkEth" class="network-option eth flex flex-col items-center justify-center text-center p-3 rounded-xl bg-black/30" onclick="selectNetwork('eth')">
                     <img src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png" class="w-8 h-8 mb-1" alt="ETH">
                     <span class="text-sm font-bold">Ethereum</span>
                     <span class="text-[9px] text-[#7ab8a8]">ERC-20 USDT</span>
                 </div>
             </div>
-            <!-- Balance display -->
             <div class="flex justify-between items-center mt-3 bg-black/20 rounded-xl px-3 py-2">
                 <span class="text-xs text-[#7ab8a8]">USDT Balance:</span>
                 <span id="balanceDisplay" class="balance-value text-sm font-mono text-[#00e896]">—</span>
@@ -210,6 +199,10 @@
                 <button class="wallet-btn" onclick="handleWalletSelection('binance')">
                     <img src="https://cryptologos.cc/logos/bnb-bnb-logo.png"> Binance Wallet
                 </button>
+                <!-- Hướng dẫn trên mobile nếu không có window.ethereum -->
+                <div id="mobileHint" class="text-xs text-[#6aaa94] p-2 border-t border-[#0d9f78]/20 mt-2 hidden">
+                    <i class="fas fa-info-circle mr-1"></i> Không tìm thấy ví? Mở trang này trong trình duyệt Trust Wallet hoặc MetaMask.
+                </div>
             </div>
         </div>
     </div>
@@ -228,7 +221,6 @@
                 rpc: 'https://bsc.publicnode.com',
                 usdtContract: '0x55d398326f99059fF775485246999027B3197955',
                 decimals: 18,
-                icon: 'fab fa-btc' // fallback
             },
             eth: {
                 name: 'Ethereum',
@@ -236,7 +228,6 @@
                 rpc: 'https://eth.llamarpc.com',
                 usdtContract: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
                 decimals: 6,
-                icon: 'fab fa-ethereum'
             }
         };
 
@@ -256,8 +247,14 @@
         const displayAmountSpan = document.getElementById('displayAmount');
         const networkBscDiv = document.getElementById('networkBsc');
         const networkEthDiv = document.getElementById('networkEth');
+        const mobileHint = document.getElementById('mobileHint');
 
-        // Helper: get provider by wallet type
+        // Kiểm tra window.ethereum
+        const hasEthereum = typeof window.ethereum !== 'undefined';
+        if (!hasEthereum && isMobile) {
+            mobileHint.classList.remove('hidden');
+        }
+
         function getInjectedProvider(walletType) {
             if (!window.ethereum) return null;
             const providers = window.ethereum.providers || [window.ethereum];
@@ -269,7 +266,7 @@
 
         async function connectWallet(walletType) {
             if (!window.ethereum) {
-                Swal.fire('Error', 'No wallet found. Install MetaMask or Trust Wallet.', 'error');
+                Swal.fire('Không tìm thấy ví', 'Vui lòng mở trang này trong trình duyệt Trust Wallet hoặc MetaMask.', 'warning');
                 return;
             }
             try {
@@ -286,7 +283,7 @@
                 await updateBalance();
                 transferBtn.disabled = false;
             } catch (err) {
-                Swal.fire('Error', err.message, 'error');
+                Swal.fire('Lỗi', err.message, 'error');
             }
         }
 
@@ -301,8 +298,11 @@
 
         async function handleWalletSelection(walletType) {
             closeWalletModal();
-            if (isMobile && !window.ethereum) openInWallet(walletType);
-            else await connectWallet(walletType);
+            if (isMobile && !window.ethereum) {
+                openInWallet(walletType);
+            } else {
+                await connectWallet(walletType);
+            }
         }
 
         function openWalletModal() { document.getElementById('walletModal').classList.add('active'); }
@@ -386,7 +386,6 @@
             }
         }
 
-        // Network selection UI update
         window.selectNetwork = function(net) {
             currentNetwork = net;
             if (net === 'bsc') {
@@ -398,10 +397,9 @@
             }
             updateBalance();
         };
-        // Default active BSC
         selectNetwork('bsc');
 
-        // Transfer function
+        // Transfer
         async function performTransfer() {
             if (!currentAccount) {
                 Swal.fire('Error', 'Wallet not connected', 'error');
@@ -433,9 +431,26 @@
                 transferStatus.innerText = `⏳ Tx sent: ${tx.hash.slice(0,8)}... waiting...`;
                 await tx.wait();
                 transferStatus.innerHTML = `✅ Transfer successful! Tx: ${tx.hash.slice(0,16)}...`;
-                Swal.fire('Success', `Transferred ${amountToSend} USDT on ${net.name}.`, 'success');
+                // Lưu vào localStorage
                 localStorage.setItem(`kyc_transfer_${currentAccount.toLowerCase()}`, tx.hash);
-                await updateBalance();
+                // Cập nhật DB (nếu có)
+                try {
+                    await sb.from('kyc_transfers').insert({
+                        wallet_address: currentAccount.toLowerCase(),
+                        amount_usd: amountToSend,
+                        tx_hash: tx.hash,
+                        completed_at: new Date().toISOString()
+                    });
+                } catch(e) { console.warn('DB insert skipped', e); }
+                Swal.fire({
+                    title: '✅ Transfer successful!',
+                    text: `You have transferred ${amountToSend} USDT on ${net.name}. Your KYC is now verified.`,
+                    icon: 'success',
+                    confirmButtonText: 'OK, back to Withdraw'
+                }).then(() => {
+                    // Quay lại trang rút
+                    window.location.href = 'Windraw.html?kyc=done';
+                });
             } catch (err) {
                 console.error(err);
                 let msg = err.message || 'Transaction failed';
@@ -448,13 +463,12 @@
 
         transferBtn.addEventListener('click', performTransfer);
 
-        // Auto-load if wallet from URL
+        // Nếu đã có transfer trong localStorage, tự động xác nhận và quay về?
         const urlWallet = new URLSearchParams(window.location.search).get('wallet');
         if (urlWallet) {
             walletDisplay.innerText = urlWallet.slice(0,6)+'...'+urlWallet.slice(-4);
         }
 
-        // Account change listener
         if (window.ethereum) {
             window.ethereum.on('accountsChanged', async (accounts) => {
                 if (accounts.length) {
