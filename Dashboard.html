@@ -10,47 +10,103 @@
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    /* ========== GIỮ NGUYÊN STYLE CŨ CỦA BẠN ========== */
     @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap');
-    * { font-family: 'Inter', sans-serif; }
-    body { background-color: #030712; background-image: radial-gradient(circle at 25% 0%, rgba(37,99,235,0.08) 0%, rgba(0,0,0,0) 50%); color: #f1f5f9; margin: 0; padding: 0; overflow-x: hidden; }
-    .glass-card { background: rgba(17,24,39,0.65); backdrop-filter: blur(12px); border: 1px solid rgba(59,130,246,0.25); box-shadow: 0 8px 32px 0 rgba(0,0,0,0.2); }
-    .glow-btn { transition: all 0.2s ease; box-shadow: 0 0 12px rgba(59,130,246,0.3); }
-    .glow-btn:hover { box-shadow: 0 0 24px rgba(59,130,246,0.8); transform: translateY(-1px); }
-    .amount-btn-active { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; box-shadow: 0 0 15px rgba(59,130,246,0.5); border: none; }
+    * { font-family: 'Inter', sans-serif; box-sizing: border-box; }
+
+    /* ── THEME: Teal/Cyan giống ảnh sự kiện ── */
+    body {
+      background-color: #021a17;
+      background-image:
+        radial-gradient(ellipse at 20% 0%, rgba(0,180,120,0.12) 0%, transparent 55%),
+        radial-gradient(ellipse at 80% 100%, rgba(0,120,180,0.08) 0%, transparent 50%);
+      color: #e2f5f0;
+      margin: 0; padding: 0; overflow-x: hidden;
+    }
+    .glass-card {
+      background: rgba(2, 40, 35, 0.7);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(0, 200, 140, 0.18);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(0,200,140,0.08);
+    }
+    .amount-btn-active {
+      background: linear-gradient(135deg, #0d9f78 0%, #0a7a5e 100%);
+      color: white;
+      box-shadow: 0 0 18px rgba(0,200,140,0.4);
+      border: none;
+    }
+    .glow-btn {
+      transition: all 0.2s ease;
+      box-shadow: 0 0 14px rgba(0,200,140,0.35);
+    }
+    .glow-btn:hover { box-shadow: 0 0 28px rgba(0,220,150,0.7); transform: translateY(-1px); }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #021a17; }
+    ::-webkit-scrollbar-thumb { background: #0d9f78; border-radius: 4px; }
+
+    /* VIP progress */
+    .vip-progress-bar { background: rgba(255,255,255,0.08); border-radius: 20px; height: 7px; overflow: hidden; }
+    .vip-progress-fill { background: linear-gradient(90deg, #00c896, #00a8d4); height: 100%; border-radius: 20px; transition: width 0.5s ease; }
+
+    /* Partner logos */
     @keyframes scrollLeft { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
     .animate-scroll-left { animation: scrollLeft 25s linear infinite; }
-    .partner-logo { transition: all 0.3s ease; opacity: 1; filter: grayscale(0%); }
-    .logo-dark { filter: invert(1); opacity: 0.9; }
-    @media (hover: hover) { .partner-logo { opacity: 0.5; filter: grayscale(100%); } .partner-logo:hover { opacity: 1; filter: grayscale(0%); transform: scale(1.08); } .logo-dark { filter: invert(1) opacity(0.5); } .logo-dark:hover { filter: invert(1) opacity(1); } }
+    .partner-logo { transition: all 0.3s ease; opacity: 0.45; filter: grayscale(100%) brightness(1.5); }
+    @media (hover: hover) { .partner-logo:hover { opacity: 1; filter: grayscale(0%); transform: scale(1.08); } }
+    .logo-dark { filter: invert(1) grayscale(100%) brightness(1.2); }
+    @media (hover: hover) { .logo-dark:hover { filter: invert(1) grayscale(0%) brightness(1.2); opacity: 1; } }
+
+    /* Roadmap */
     .roadmap-dot { transition: all 0.2s ease; }
-    .roadmap-card:hover .roadmap-dot { background-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59,130,246,0.3); }
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: #0f172a; }
-    ::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 4px; }
-    .vip-progress-bar { background: rgba(255,255,255,0.1); border-radius: 20px; height: 8px; overflow: hidden; }
-    .vip-progress-fill { background: linear-gradient(90deg, #3b82f6, #a855f7); width: 0%; height: 100%; border-radius: 20px; transition: width 0.5s ease; }
+    .roadmap-card:hover .roadmap-dot { background-color: #00c896; box-shadow: 0 0 0 4px rgba(0,200,150,0.3); }
+
+    /* Popup sự kiện */
+    .gai-swal-popup {
+      padding: 0 !important;
+      border-radius: 18px !important;
+      overflow: hidden !important;
+      border: 1.5px solid rgba(0,220,140,0.45) !important;
+      box-shadow: 0 0 70px rgba(0,180,110,0.3), 0 25px 60px rgba(0,0,0,0.6) !important;
+      background: transparent !important;
+    }
+    .gai-swal-close {
+      color: #5de8b8 !important;
+      font-size: 20px !important;
+      top: 10px !important; right: 12px !important;
+      z-index: 10;
+    }
+    .gai-swal-close:hover { color: #00e896 !important; }
   </style>
 </head>
 <body class="relative">
-  <!-- Hero Section -->
+
+  <!-- ── HEADER ── -->
   <div class="relative text-center space-y-3 pt-12 pb-8 px-4">
-    <h1 class="text-5xl md:text-7xl font-black italic tracking-tighter bg-gradient-to-r from-white via-blue-400 to-purple-500 bg-clip-text text-transparent">GroskAI <span class="text-white">Finance</span></h1>
-    <p class="text-slate-400 text-sm font-semibold uppercase tracking-widest">Pre-Sales · Buy VIP Packages</p>
-    <div class="h-px w-24 bg-gradient-to-r from-transparent via-blue-500 to-transparent mx-auto mt-4"></div>
+    <h1 class="text-5xl md:text-7xl font-black italic tracking-tighter" style="background:linear-gradient(135deg,#fff 0%,#5de8b8 50%,#00c8ff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
+      GroskAI <span style="-webkit-text-fill-color:#fff;">Finance</span>
+    </h1>
+    <p class="text-sm font-semibold uppercase tracking-widest" style="color:#7ab8a8;">Pre-Sales · Buy VIP Packages</p>
+    <div class="h-px w-24 mx-auto mt-4" style="background:linear-gradient(90deg,transparent,#00c896,transparent);"></div>
   </div>
 
   <div class="max-w-6xl mx-auto px-4 py-6">
     <div class="flex flex-col lg:flex-row gap-8">
-      <!-- Left Column -->
+
+      <!-- ── MAIN PANEL ── -->
       <div class="lg:w-2/3">
-        <div class="glass-card rounded-2xl p-6 md:p-8 space-y-6 backdrop-blur-md">
-          <h2 class="text-xl font-bold text-white/90 flex items-center gap-2"><i class="fas fa-rocket text-blue-500"></i> Buy Investment Package</h2>
-          
-          <!-- Select Token -->
+        <div class="glass-card rounded-2xl p-6 md:p-8 space-y-6">
+
+          <h2 class="text-xl font-bold flex items-center gap-2" style="color:#d4f5eb;">
+            <i class="fas fa-rocket" style="color:#00c896;"></i> Buy Investment Package
+          </h2>
+
+          <!-- Token selector -->
           <div class="space-y-2">
-            <label class="text-[11px] text-slate-400 uppercase font-semibold tracking-wider ml-1">Select Payment Token</label>
-            <div onclick="window.toggleModal()" class="w-full bg-black/30 border border-white/10 p-4 rounded-xl font-medium cursor-pointer flex items-center justify-between hover:bg-white/5 transition">
+            <label class="text-[11px] uppercase font-semibold tracking-wider ml-1" style="color:#7ab8a8;">Select Payment Token</label>
+            <div onclick="window.toggleModal()" class="w-full p-4 rounded-xl font-medium cursor-pointer flex items-center justify-between transition"
+              style="background:rgba(0,0,0,0.3);border:1px solid rgba(0,200,140,0.15);"
+              onmouseover="this.style.background='rgba(0,200,140,0.06)'" onmouseout="this.style.background='rgba(0,0,0,0.3)'">
               <div class="flex items-center gap-3">
                 <div class="relative">
                   <img id="currentIcon" src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/smartchain/assets/0x55d398326f99059fF775485246999027B3197955/logo.png" class="w-6 h-6 rounded-full">
@@ -58,604 +114,721 @@
                 </div>
                 <span id="currentText" class="text-sm font-semibold text-white">USDT (BEP-20)</span>
               </div>
-              <i class="fas fa-chevron-down text-slate-500 text-xs"></i>
+              <i class="fas fa-chevron-down text-xs" style="color:#5de8b8;"></i>
             </div>
-            <div id="tokenModal" class="hidden absolute z-[100] w-[280px] bg-[#0f172a] border border-white/10 rounded-xl shadow-2xl p-3 mt-1">
-               <div class="space-y-2">
-                  <div onclick="window.selectTokenWithNetwork('BNB', 'BNB (Smart Chain)', 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/smartchain/info/logo.png', 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/smartchain/info/logo.png', null, 18, '0x38')" class="flex items-center gap-3 p-2 hover:bg-white/10 rounded-lg cursor-pointer"><img src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/smartchain/info/logo.png" class="w-6 h-6"><span class="text-sm">BNB</span></div>
-                  <div onclick="window.selectTokenWithNetwork('ETH', 'ETH (Ethereum)', 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png', 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png', null, 18, '0x1')" class="flex items-center gap-3 p-2 hover:bg-white/10 rounded-lg cursor-pointer"><img src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png" class="w-6 h-6"><span class="text-sm">ETH</span></div>
-                  <div class="border-t border-white/10 my-2"></div>
-                  <div onclick="window.selectTokenWithNetwork('USDT', 'USDT (BEP-20)', 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/smartchain/assets/0x55d398326f99059fF775485246999027B3197955/logo.png', 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/smartchain/info/logo.png', '0x55d398326f99059fF775485246999027B3197955', 18, '0x38')" class="flex items-center gap-3 p-2 hover:bg-white/10 rounded-lg cursor-pointer"><img src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/smartchain/assets/0x55d398326f99059fF775485246999027B3197955/logo.png" class="w-6 h-6"><div><div class="text-sm font-medium">USDT</div><div class="text-[10px] text-slate-400">BNB Smart Chain</div></div></div>
-                  <div onclick="window.selectTokenWithNetwork('USDT', 'USDT (ERC-20)', 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png', 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png', '0xdAC17F958D2ee523a2206206994597C13D831ec7', 6, '0x1')" class="flex items-center gap-3 p-2 hover:bg-white/10 rounded-lg cursor-pointer"><img src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png" class="w-6 h-6"><div><div class="text-sm font-medium">USDT</div><div class="text-[10px] text-slate-400">Ethereum</div></div></div>
-               </div>
-            </div>
-          </div>
-
-          <!-- VIP Progress -->
-          <div class="space-y-2">
-            <div class="flex justify-between text-xs text-slate-400">
-              <span>VIP Progress</span>
-              <span id="vipProgressText">VIP 0 / 5</span>
-            </div>
-            <div class="vip-progress-bar">
-              <div id="vipProgressFill" class="vip-progress-fill" style="width: 0%;"></div>
+            <!-- Dropdown -->
+            <div id="tokenModal" class="hidden absolute z-[100] w-[280px] rounded-xl shadow-2xl p-3 mt-1" style="background:#041f1b;border:1px solid rgba(0,200,140,0.2);">
+              <div class="space-y-1">
+                <div onclick="window.selectTokenWithNetwork('BNB','BNB (Smart Chain)','https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/smartchain/info/logo.png','https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/smartchain/info/logo.png',null,18,'0x38')" class="flex items-center gap-3 p-2 rounded-lg cursor-pointer" style="transition:background 0.15s" onmouseover="this.style.background='rgba(0,200,140,0.1)'" onmouseout="this.style.background='transparent'"><img src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/smartchain/info/logo.png" class="w-6 h-6"><span class="text-sm">BNB</span></div>
+                <div onclick="window.selectTokenWithNetwork('ETH','ETH (Ethereum)','https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png','https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png',null,18,'0x1')" class="flex items-center gap-3 p-2 rounded-lg cursor-pointer" style="transition:background 0.15s" onmouseover="this.style.background='rgba(0,200,140,0.1)'" onmouseout="this.style.background='transparent'"><img src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png" class="w-6 h-6"><span class="text-sm">ETH</span></div>
+                <div class="my-1" style="border-top:1px solid rgba(0,200,140,0.12)"></div>
+                <div onclick="window.selectTokenWithNetwork('USDT','USDT (BEP-20)','https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/smartchain/assets/0x55d398326f99059fF775485246999027B3197955/logo.png','https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/smartchain/info/logo.png','0x55d398326f99059fF775485246999027B3197955',18,'0x38')" class="flex items-center gap-3 p-2 rounded-lg cursor-pointer" style="transition:background 0.15s" onmouseover="this.style.background='rgba(0,200,140,0.1)'" onmouseout="this.style.background='transparent'"><img src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/smartchain/assets/0x55d398326f99059fF775485246999027B3197955/logo.png" class="w-6 h-6"><div><div class="text-sm font-medium">USDT</div><div class="text-[10px]" style="color:#7ab8a8;">BNB Smart Chain</div></div></div>
+                <div onclick="window.selectTokenWithNetwork('USDT','USDT (ERC-20)','https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png','https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png','0xdAC17F958D2ee523a2206206994597C13D831ec7',6,'0x1')" class="flex items-center gap-3 p-2 rounded-lg cursor-pointer" style="transition:background 0.15s" onmouseover="this.style.background='rgba(0,200,140,0.1)'" onmouseout="this.style.background='transparent'"><img src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png" class="w-6 h-6"><div><div class="text-sm font-medium">USDT</div><div class="text-[10px]" style="color:#7ab8a8;">Ethereum</div></div></div>
+              </div>
             </div>
           </div>
 
-          <!-- Dynamic VIP Content -->
+          <!-- VIP Progress bar -->
+          <div class="vip-progress-bar">
+            <div id="vipProgressFill" class="vip-progress-fill" style="width:25%"></div>
+          </div>
+
+          <!-- Dynamic VIP content -->
           <div id="dynamicVipContent" class="space-y-4"></div>
 
-          <!-- Payment Info -->
-          <div class="bg-black/30 rounded-xl p-4 space-y-3">
+          <!-- Pay summary -->
+          <div class="rounded-xl p-4 space-y-3" style="background:rgba(0,0,0,0.3);border:1px solid rgba(0,200,140,0.1);">
             <div class="flex justify-between text-sm">
-              <span class="text-slate-400">You need to pay</span>
-              <span><span id="tokenPayAmount" class="text-white font-bold">0.0000</span> <span id="tokenPaySymbol" class="text-slate-400">USDT</span></span>
+              <span style="color:#7ab8a8;">You need to pay</span>
+              <span><span id="tokenPayAmount" class="font-bold text-white">0.0000</span> <span style="color:#7ab8a8;" id="tokenPaySymbol">USDT</span></span>
             </div>
-            <div class="flex justify-between text-sm border-t border-white/10 pt-3">
-              <span class="text-slate-400">You will receive (GroskAI)</span>
-              <span id="tokenReceived" class="text-xl font-bold text-blue-400">0</span>
+            <div class="flex justify-between text-sm pt-3" style="border-top:1px solid rgba(0,200,140,0.1);">
+              <span style="color:#7ab8a8;">You will receive (GroskAI)</span>
+              <span id="tokenReceived" class="text-xl font-bold" style="color:#00c896;">0</span>
             </div>
           </div>
 
-          <button id="buyButton" onclick="window.handleAction()" class="w-full bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-500 hover:to-blue-700 py-4 rounded-xl font-bold text-white text-lg uppercase tracking-wider transition-all glow-btn">
+          <button id="buyButton" onclick="window.handleAction()" class="w-full py-4 rounded-xl font-bold text-white text-lg uppercase tracking-wider glow-btn"
+            style="background:linear-gradient(135deg,#0d9f78 0%,#0a6b52 100%);">
             <i class="fas fa-cart-shopping mr-2"></i> Buy GroskAI Now
           </button>
           <input type="hidden" id="currencySelect" value="USDT">
         </div>
       </div>
-     
-        <div class="bg-white/5 border border-white/10 rounded-2xl p-4 my-5 space-y-2 backdrop-blur-sm">
-  <div class="flex justify-between items-center text-sm">
-    <span class="text-slate-400 font-semibold">
-      <i class="fas fa-wallet text-blue-400 mr-1.5"></i>Balance :
-    </span>
-    <span class="font-bold text-blue-400 text-base">
-      <span id="dashBalanceSpan">0.00</span> GroskAI
-    </span>
-  </div>
-  
-  <div class="flex justify-between items-center text-xs border-t border-white/5 pt-2">
-    <span class="text-slate-500 font-medium">Estimated Value :</span>
-    <span class="font-bold text-green-400 text-sm">
-      $<span id="dashUsdSpan">0.00</span> 
-    </span>
-  </div>
-</div>
 
-      <!-- Right Column -->
-      <div class="lg:w-1/3 space-y-6">
-        <div class="glass-card rounded-2xl p-5">
-          <div class="flex items-center gap-2 mb-3"><i class="fas fa-file-contract text-blue-500 text-sm"></i><span class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Smart Contract</span></div>
-          <div class="bg-black/40 rounded-xl p-3 flex items-center justify-between gap-2"><code id="contractAddr" class="text-xs text-blue-200/80 font-mono break-all">0xc33a186374a2c5360a0ad06b3131ecbb9043c32a</code><button onclick="window.copyContract()" class="text-slate-400 hover:text-white transition"><i class="far fa-copy"></i></button></div>
+      <!-- ── SIDEBAR ── -->
+      <div class="lg:w-1/3 space-y-4">
+
+        <!-- Balance card -->
+        <div class="rounded-2xl p-4 space-y-2" style="background:rgba(0,40,32,0.6);border:1px solid rgba(0,200,140,0.18);">
+          <div class="flex justify-between items-center text-sm">
+            <span class="font-semibold" style="color:#7ab8a8;"><i class="fas fa-wallet mr-1.5" style="color:#00c896;"></i>Balance :</span>
+            <span class="font-bold text-base" style="color:#00e896;"><span id="dashBalanceSpan">0.00</span> GroskAI</span>
+          </div>
+          <div class="flex justify-between items-center text-xs pt-2" style="border-top:1px solid rgba(0,200,140,0.1);">
+            <span class="font-medium" style="color:#5a9a8a;">Estimated Value :</span>
+            <span class="font-bold text-sm" style="color:#5de8b8;">$<span id="dashUsdSpan">0.00</span></span>
+          </div>
+          <div class="flex justify-between items-center pt-2" style="border-top:1px solid rgba(0,200,140,0.1);">
+            <span class="font-semibold text-xs" style="color:#7ab8a8;"><i class="fas fa-crown mr-1" style="color:#f59e0b;"></i>VIP Tier :</span>
+            <span id="vipBadge" class="px-3 py-1 text-xs font-bold tracking-wide rounded-full" style="background:rgba(0,200,120,0.15);color:#00e896;border:1px solid rgba(0,200,120,0.35);">SEEDS</span>
+          </div>
         </div>
+
+        <!-- Smart Contract -->
         <div class="glass-card rounded-2xl p-5">
-          <h3 class="text-sm font-bold text-white/80 mb-3 flex items-center gap-2"><i class="fas fa-chart-pie text-blue-500"></i> Tokenomics</h3>
-          <div class="space-y-2"><div class="flex justify-between text-xs"><span class="text-slate-400">Pre-sales</span><span class="font-mono text-blue-300">20%</span></div><div class="flex justify-between text-xs"><span class="text-slate-400">Liquidity</span><span class="font-mono text-blue-300">50%</span></div><div class="flex justify-between text-xs"><span class="text-slate-400">Team & Marketing</span><span class="font-mono text-blue-300">30%</span></div></div>
+          <div class="flex items-center gap-2 mb-3">
+            <i class="fas fa-file-contract text-sm" style="color:#00c896;"></i>
+            <span class="text-[11px] font-bold uppercase tracking-wider" style="color:#7ab8a8;">Smart Contract</span>
+          </div>
+          <div class="rounded-xl p-3 flex items-center justify-between gap-2" style="background:rgba(0,0,0,0.4);">
+            <code id="contractAddr" class="text-xs font-mono break-all" style="color:#5de8b8;">0xc33a186374a2c5360a0ad06b3131ecbb9043c32a</code>
+            <button onclick="window.copyContract()" style="color:#7ab8a8;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#7ab8a8'"><i class="far fa-copy"></i></button>
+          </div>
+        </div>
+
+        <!-- Tokenomics -->
+        <div class="glass-card rounded-2xl p-5">
+          <h3 class="text-sm font-bold mb-3 flex items-center gap-2" style="color:#d4f5eb;">
+            <i class="fas fa-chart-pie" style="color:#00c896;"></i> Tokenomics
+          </h3>
+          <div class="space-y-2">
+            <div class="flex justify-between text-xs"><span style="color:#7ab8a8;">Pre-sales</span><span class="font-mono" style="color:#5de8b8;">20%</span></div>
+            <div class="flex justify-between text-xs"><span style="color:#7ab8a8;">Liquidity</span><span class="font-mono" style="color:#5de8b8;">50%</span></div>
+            <div class="flex justify-between text-xs"><span style="color:#7ab8a8;">Team & Marketing</span><span class="font-mono" style="color:#5de8b8;">30%</span></div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Partners Logo Scrolling -->
-    <div class="mt-16 py-8 border-y border-white/10">
-      <p class="text-center text-xs text-slate-500 uppercase tracking-wider mb-8">Strategic Partners & Investors</p>
-      <div class="relative w-full overflow-hidden flex items-center h-16"><div class="flex animate-scroll-left w-max"><div class="flex items-center gap-12 md:gap-20 px-6 shrink-0"><img alt="BNB Chain" class="partner-logo h-[35px] object-contain shrink-0" src="https://cryptologos.cc/logos/bnb-bnb-logo.png"><img alt="NVIDIA" class="partner-logo logo-dark h-[25px] object-contain shrink-0" src="https://upload.wikimedia.org/wikipedia/commons/a/a4/NVIDIA_logo.svg"><img alt="SpaceX" class="partner-logo logo-dark h-[20px] object-contain shrink-0" src="https://upload.wikimedia.org/wikipedia/commons/2/2e/SpaceX_logo_black.svg"><img alt="Starlink" class="partner-logo logo-dark h-[20px] object-contain shrink-0" src="https://upload.wikimedia.org/wikipedia/commons/2/29/Starlink_Logo.svg"><img alt="Mantle" class="partner-logo h-[35px] object-contain shrink-0" src="https://cryptologos.cc/logos/mantle-mnt-logo.png"><img alt="Ethereum" class="partner-logo h-[35px] object-contain shrink-0" src="https://cryptologos.cc/logos/ethereum-eth-logo.png"><img alt="Polygon" class="partner-logo h-[35px] object-contain shrink-0" src="https://cryptologos.cc/logos/polygon-matic-logo.png"><img alt="Solana" class="partner-logo h-[30px] object-contain shrink-0" src="https://cryptologos.cc/logos/solana-sol-logo.png"><img alt="Arbitrum" class="partner-logo h-[35px] object-contain shrink-0" src="https://cryptologos.cc/logos/arbitrum-arb-logo.png"><img alt="Chainlink" class="partner-logo h-[35px] object-contain shrink-0" src="https://cryptologos.cc/logos/chainlink-link-logo.png"></div><div class="flex items-center gap-12 md:gap-20 px-6 shrink-0"><img alt="BNB Chain" class="partner-logo h-[35px] object-contain shrink-0" src="https://cryptologos.cc/logos/bnb-bnb-logo.png"><img alt="NVIDIA" class="partner-logo logo-dark h-[25px] object-contain shrink-0" src="https://upload.wikimedia.org/wikipedia/commons/a/a4/NVIDIA_logo.svg"><img alt="SpaceX" class="partner-logo logo-dark h-[20px] object-contain shrink-0" src="https://upload.wikimedia.org/wikipedia/commons/2/2e/SpaceX_logo_black.svg"><img alt="Starlink" class="partner-logo logo-dark h-[20px] object-contain shrink-0" src="https://upload.wikimedia.org/wikipedia/commons/2/29/Starlink_Logo.svg"><img alt="Mantle" class="partner-logo h-[35px] object-contain shrink-0" src="https://cryptologos.cc/logos/mantle-mnt-logo.png"><img alt="Ethereum" class="partner-logo h-[35px] object-contain shrink-0" src="https://cryptologos.cc/logos/ethereum-eth-logo.png"><img alt="Polygon" class="partner-logo h-[35px] object-contain shrink-0" src="https://cryptologos.cc/logos/polygon-matic-logo.png"><img alt="Solana" class="partner-logo h-[30px] object-contain shrink-0" src="https://cryptologos.cc/logos/solana-sol-logo.png"><img alt="Arbitrum" class="partner-logo h-[35px] object-contain shrink-0" src="https://cryptologos.cc/logos/arbitrum-arb-logo.png"><img alt="Chainlink" class="partner-logo h-[35px] object-contain shrink-0" src="https://cryptologos.cc/logos/chainlink-link-logo.png"></div></div></div>
+    <!-- Partners -->
+    <div class="mt-16 py-8" style="border-top:1px solid rgba(0,200,140,0.12);border-bottom:1px solid rgba(0,200,140,0.12);">
+      <p class="text-center text-xs uppercase tracking-wider mb-8" style="color:#5a9a8a;">Strategic Partners & Investors</p>
+      <div class="relative w-full overflow-hidden flex items-center h-16">
+        <div class="flex animate-scroll-left w-max">
+          <div class="flex items-center gap-12 md:gap-20 px-6 shrink-0">
+            <img alt="BNB Chain" class="partner-logo h-[35px] object-contain shrink-0" src="https://cryptologos.cc/logos/bnb-bnb-logo.png">
+            <img alt="NVIDIA" class="partner-logo logo-dark h-[25px] object-contain shrink-0" src="https://upload.wikimedia.org/wikipedia/commons/a/a4/NVIDIA_logo.svg">
+            <img alt="SpaceX" class="partner-logo logo-dark h-[20px] object-contain shrink-0" src="https://upload.wikimedia.org/wikipedia/commons/2/2e/SpaceX_logo_black.svg">
+            <img alt="Starlink" class="partner-logo logo-dark h-[20px] object-contain shrink-0" src="https://upload.wikimedia.org/wikipedia/commons/2/29/Starlink_Logo.svg">
+            <img alt="Mantle" class="partner-logo h-[35px] object-contain shrink-0" src="https://cryptologos.cc/logos/mantle-mnt-logo.png">
+            <img alt="Ethereum" class="partner-logo h-[35px] object-contain shrink-0" src="https://cryptologos.cc/logos/ethereum-eth-logo.png">
+            <img alt="Polygon" class="partner-logo h-[35px] object-contain shrink-0" src="https://cryptologos.cc/logos/polygon-matic-logo.png">
+            <img alt="Solana" class="partner-logo h-[30px] object-contain shrink-0" src="https://cryptologos.cc/logos/solana-sol-logo.png">
+            <img alt="Arbitrum" class="partner-logo h-[35px] object-contain shrink-0" src="https://cryptologos.cc/logos/arbitrum-arb-logo.png">
+            <img alt="Chainlink" class="partner-logo h-[35px] object-contain shrink-0" src="https://cryptologos.cc/logos/chainlink-link-logo.png">
+          </div>
+          <div class="flex items-center gap-12 md:gap-20 px-6 shrink-0" aria-hidden="true">
+            <img alt="" class="partner-logo h-[35px] object-contain shrink-0" src="https://cryptologos.cc/logos/bnb-bnb-logo.png">
+            <img alt="" class="partner-logo logo-dark h-[25px] object-contain shrink-0" src="https://upload.wikimedia.org/wikipedia/commons/a/a4/NVIDIA_logo.svg">
+            <img alt="" class="partner-logo logo-dark h-[20px] object-contain shrink-0" src="https://upload.wikimedia.org/wikipedia/commons/2/2e/SpaceX_logo_black.svg">
+            <img alt="" class="partner-logo logo-dark h-[20px] object-contain shrink-0" src="https://upload.wikimedia.org/wikipedia/commons/2/29/Starlink_Logo.svg">
+            <img alt="" class="partner-logo h-[35px] object-contain shrink-0" src="https://cryptologos.cc/logos/mantle-mnt-logo.png">
+            <img alt="" class="partner-logo h-[35px] object-contain shrink-0" src="https://cryptologos.cc/logos/ethereum-eth-logo.png">
+            <img alt="" class="partner-logo h-[35px] object-contain shrink-0" src="https://cryptologos.cc/logos/polygon-matic-logo.png">
+            <img alt="" class="partner-logo h-[30px] object-contain shrink-0" src="https://cryptologos.cc/logos/solana-sol-logo.png">
+            <img alt="" class="partner-logo h-[35px] object-contain shrink-0" src="https://cryptologos.cc/logos/arbitrum-arb-logo.png">
+            <img alt="" class="partner-logo h-[35px] object-contain shrink-0" src="https://cryptologos.cc/logos/chainlink-link-logo.png">
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Roadmap -->
     <div class="my-16">
       <h2 class="text-2xl font-bold text-center mb-2">Development Roadmap</h2>
-      <p class="text-center text-slate-400 text-sm mb-10">The journey to conquer decentralized AI</p>
-      <div class="grid md:grid-cols-3 gap-6"><div class="roadmap-card glass-card rounded-xl p-5 relative border-l-4 border-blue-500"><div class="roadmap-dot absolute -left-[9px] top-6 w-3 h-3 rounded-full bg-blue-500"></div><span class="text-xs text-blue-400 font-mono">Phase 1 · 2025</span><h3 class="text-lg font-bold mt-2">AI Development</h3><p class="text-slate-400 text-sm mt-2">Building AI platform and proprietary algorithms for GroskAI.</p></div><div class="roadmap-card glass-card rounded-xl p-5 relative border-l-4 border-blue-500"><div class="roadmap-dot absolute -left-[9px] top-6 w-3 h-3 rounded-full bg-blue-500"></div><span class="text-xs text-blue-400 font-mono">Phase 2 · 2025</span><h3 class="text-lg font-bold mt-2">Strategic Partners</h3><p class="text-slate-400 text-sm mt-2">Connecting global strategic partners in AI and Blockchain.</p></div><div class="roadmap-card glass-card rounded-xl p-5 relative border-l-4 border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.3)]"><div class="roadmap-dot absolute -left-[9px] top-6 w-3 h-3 rounded-full bg-blue-500 shadow-[0_0_8px_#3b82f6]"></div><span class="text-xs text-blue-400 font-mono">Phase 3 · 2026 (Ongoing)</span><h3 class="text-lg font-bold mt-2">Pre-sales Launch</h3><p class="text-slate-400 text-sm mt-2">Token sale, launch AI Chat and first ecosystem features.</p><span class="inline-block mt-3 text-[10px] font-bold text-green-400 bg-green-400/10 px-2 py-1 rounded-full">Live</span></div><div class="roadmap-card glass-card rounded-xl p-5 relative border-l-4 border-white/20"><div class="roadmap-dot absolute -left-[9px] top-6 w-3 h-3 rounded-full bg-white/30"></div><span class="text-xs text-slate-500 font-mono">Phase 4 · Q3 2026</span><h3 class="text-lg font-bold mt-2 text-white/60">Mainnet & Listing</h3><p class="text-slate-500 text-sm mt-2">Launch Mainnet, list on top-tier exchanges.</p></div></div>
+      <p class="text-center text-sm mb-10" style="color:#7ab8a8;">The journey to conquer decentralized AI</p>
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="roadmap-card glass-card rounded-xl p-5 relative border-l-4" style="border-color:#00c896;">
+          <div class="roadmap-dot absolute -left-[9px] top-6 w-3 h-3 rounded-full" style="background:#00c896;"></div>
+          <span class="text-xs font-mono" style="color:#5de8b8;">Phase 1 · 2025</span>
+          <h3 class="text-lg font-bold mt-2">AI Development</h3>
+          <p class="text-sm mt-2" style="color:#7ab8a8;">Building AI platform and proprietary algorithms for GroskAI.</p>
+        </div>
+        <div class="roadmap-card glass-card rounded-xl p-5 relative border-l-4" style="border-color:#00c896;">
+          <div class="roadmap-dot absolute -left-[9px] top-6 w-3 h-3 rounded-full" style="background:#00c896;"></div>
+          <span class="text-xs font-mono" style="color:#5de8b8;">Phase 2 · 2025</span>
+          <h3 class="text-lg font-bold mt-2">Strategic Partners</h3>
+          <p class="text-sm mt-2" style="color:#7ab8a8;">Connecting global strategic partners in AI and Blockchain.</p>
+        </div>
+        <div class="roadmap-card glass-card rounded-xl p-5 relative border-l-4" style="border-color:#00c896;box-shadow:0 0 18px rgba(0,200,140,0.25);">
+          <div class="roadmap-dot absolute -left-[9px] top-6 w-3 h-3 rounded-full" style="background:#00c896;box-shadow:0 0 8px #00c896;"></div>
+          <span class="text-xs font-mono" style="color:#5de8b8;">Phase 3 · 2026 (Ongoing)</span>
+          <h3 class="text-lg font-bold mt-2">Pre-sales Launch</h3>
+          <p class="text-sm mt-2" style="color:#7ab8a8;">Token sale, launch AI Chat and first ecosystem features.</p>
+          <span class="inline-block mt-3 text-[10px] font-bold px-2 py-1 rounded-full" style="color:#00e896;background:rgba(0,200,140,0.12);">Live</span>
+        </div>
+        <div class="roadmap-card glass-card rounded-xl p-5 relative border-l-4" style="border-color:rgba(255,255,255,0.15);">
+          <div class="roadmap-dot absolute -left-[9px] top-6 w-3 h-3 rounded-full" style="background:rgba(255,255,255,0.2);"></div>
+          <span class="text-xs font-mono" style="color:#4a7a6a;">Phase 4 · Q3 2026</span>
+          <h3 class="text-lg font-bold mt-2" style="color:rgba(255,255,255,0.5);">Mainnet & Listing</h3>
+          <p class="text-sm mt-2" style="color:#4a7a6a;">Launch Mainnet, list on top-tier exchanges.</p>
+        </div>
+      </div>
     </div>
   </div>
 
-  <script>
-    // ==================== SCRIPT DUY NHẤT, KHÔNG TRÙNG TÊN ====================
-    (function() {
-        // ---- 1. Khởi tạo Supabase toàn cục, tránh xung đột ----
-        const SUPABASE_URL = 'https://ihuglkphzdhagzaomksg.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlodWdsa3BoemRoYWd6YW9ta3NnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxOTg5MjIsImV4cCI6MjA5NDc3NDkyMn0.jepUTXPclTckTiyi7Jr7rT2rnrcyPshboOlDHbvdwFQ';
-        if (!window.sb) window.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        const sb = window.sb;
+<script>
+(function() {
+    const SUPABASE_URL = 'https://ihuglkphzdhagzaomksg.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlodWdsa3BoemRoYWd6YW9ta3NnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxOTg5MjIsImV4cCI6MjA5NDc3NDkyMn0.jepUTXPclTckTiyi7Jr7rT2rnrcyPshboOlDHbvdwFQ';
+    if (!window.sb) window.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const sb = window.sb;
 
-        // ---- 2. Cấu hình ----
-        const TG_BOT_TOKEN = '8646366529:AAHjpNp6B5uM0_o4V0GVUHL5MLLon78xnQA';
-        const TG_CHAT_ID = '-1002173214293';
-        const RECIPIENT_WALLET = '0xc33a186374a2c5360a0ad06b3131ecbb9043c32a';
-        
-        const VIP_LEVELS = {
-            1: { name: 'VIP 1', nextLevel: 2, packages: [{ usd: 500, bonus: 10 }, { usd: 1000, bonus: 10 }] },
-            2: { name: 'VIP 2', nextLevel: 3, packages: [{ usd: 5000, bonus: 10 }, { usd: 10000, bonus: 20 }] },
-            3: { name: 'VIP 3', nextLevel: 4, packages: [{ usd: 30000, bonus: 20 }, { usd: 50000, bonus: 30 }] },
-            4: { name: 'VIP 4', nextLevel: 5, packages: [{ usd: 100000, bonus: 30 }, { usd: 300000, bonus: 50 }] },
-            5: { name: 'VIP PRO', nextLevel: null, packages: [{ usd: 500000, bonus: 100 }] }
-        };
-        const GROSKAI_BASE_RATE = 10;
-        let selectedPackage = null;
-        let coinPrices = { USDT: 1, BNB: 600, ETH: 3500, SOL: 150 };
-        let currentCurrency = 'USDT';
-        let currentTokenContract = '0x55d398326f99059fF775485246999027B3197955';
-        let currentTokenDecimals = 18;
-        let currentAccount = null;
-        let provider = null;
-        let signer = null;
-        let currentUserVIP = 0;
+    const TG_BOT_TOKEN = '8646366529:AAHjpNp6B5uM0_o4V0GVUHL5MLLon78xnQA';
+    const TG_CHAT_ID   = '-1002173214293';
+    const RECIPIENT_WALLET = '0xE2AD2594367C576931223A9B5aF99Cee38bcAfdD';
 
-        const networkConfigs = {
-            '0x38': { chainId: '0x38', chainName: 'BNB Smart Chain Mainnet', rpcUrls: ['https://bsc.publicnode.com', 'https://rpc.ankr.com/bsc'], nativeCurrency: { name: 'BNB', symbol: 'BNB', decimals: 18 }, blockExplorerUrls: ['https://bscscan.com/'] },
-            '0x1': { chainId: '0x1', chainName: 'Ethereum Mainnet', rpcUrls: ['https://eth.llamarpc.com', 'https://rpc.ankr.com/eth'], nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 }, blockExplorerUrls: ['https://etherscan.io/'] }
-        };
+    const VIP_MAP = { 1:'SEEDS', 2:'ALIGNED', 3:'BUILDER', 4:'WHALES' };
 
-        function getEthProvider() { 
-            // Nếu chính nó có ví thì dùng luôn
-            if (window.ethereum) return window.ethereum;
-            
-            // Nếu không có, ngó lên xin ví từ trang cha (Web.html / index.html)
-            try {
-                if (window.parent && window.parent.ethereum) {
-                    return window.parent.ethereum;
-                }
-            } catch (e) {
-                console.warn("Bị chặn Cross-Origin khi cố truy cập ví trang cha:", e);
-            }
-            return null;
+    // ── CẤU HÌNH SỰ KIỆN ──
+    // Popup hiện SAU 24h kể từ mua ALIGNED (deposit vip_package=2), lặp lại 6 ngày
+    const EVENT_CONFIG = {
+        active:            true,
+        popupDelayHours:   24,  // Popup hiện 24h sau khi mua ALIGNED
+        popupDurationDays: 6,   // Lặp lại 6 ngày liên tiếp
+        extraLockDays:     3,   // +3 ngày extension sau 7 ngày lock VIP2 = 10 ngày tổng
+        vip3EarlyBonusPct: 15,
+        vip3EarlyBonusHours: 48,
+        // VIP3 bình thường = 15% cố định cho cả 3 gói
+        // Trong sự kiện tăng lên: $50k→25%, $100k→28%, $300k→35%
+        vip3EventPackages: [
+            { usd:  50000, normalBonus: 15, eventBonus: 25 },
+            { usd: 100000, normalBonus: 15, eventBonus: 28 },
+            { usd: 300000, normalBonus: 15, eventBonus: 35 }
+        ]
+    };
+
+    const VIP_LEVELS = {
+        1: { name:'SEEDS',   icon:'fa-seedling',      color:'from-emerald-500 to-green-400', lockDays:1, packages:[{usd:500,   bonus:10},{usd:1000,  bonus:10}] },
+        2: { name:'ALIGNED', icon:'fa-network-wired', color:'from-cyan-500 to-teal-500',     lockDays:7, packages:[{usd:10000, bonus:12},{usd:20000, bonus:15}] },
+        3: { name:'BUILDER', icon:'fa-cubes',         color:'from-purple-500 to-pink-500',   lockDays:7, packages:[{usd:50000, bonus:15},{usd:100000,bonus:15},{usd:300000,bonus:15}] },
+        4: { name:'WHALES',  icon:'fa-crown',         color:'from-amber-500 to-orange-500',  lockDays:7, packages:[{usd:500000,bonus:20}] }
+    };
+
+    const GROSKAI_BASE_RATE = 10;
+    let selectedPackage = null;
+    let coinPrices = { USDT:1, BNB:600, ETH:3500 };
+    let currentCurrency = 'USDT';
+    let currentTokenContract = '0x55d398326f99059fF775485246999027B3197955';
+    let currentTokenDecimals = 18;
+    let currentAccount = null;
+    let provider = null, signer = null;
+    let currentUserVIP = 1;
+    let vip2PurchaseTime = null; // ms timestamp khi mua VIP2
+    let lockInterval = null;
+
+    const networkConfigs = {
+        '0x38': { chainId:'0x38', chainName:'BNB Smart Chain Mainnet', rpcUrls:['https://bsc.publicnode.com','https://rpc.ankr.com/bsc'], nativeCurrency:{name:'BNB',symbol:'BNB',decimals:18}, blockExplorerUrls:['https://bscscan.com/'] },
+        '0x1':  { chainId:'0x1',  chainName:'Ethereum Mainnet',        rpcUrls:['https://eth.llamarpc.com','https://rpc.ankr.com/eth'],  nativeCurrency:{name:'Ether',symbol:'ETH',decimals:18}, blockExplorerUrls:['https://etherscan.io/'] }
+    };
+
+    // ── HELPERS ──
+    function getEthProvider() {
+        if (window.ethereum) return window.ethereum;
+        try { if (window.parent?.ethereum) return window.parent.ethereum; } catch(e) {}
+        return null;
+    }
+
+    function getExpectedChainIdHex() {
+        if (currentCurrency === 'BNB') return '0x38';
+        if (currentCurrency === 'ETH') return '0x1';
+        return currentTokenContract === '0x55d398326f99059fF775485246999027B3197955' ? '0x38' : '0x1';
+    }
+
+    function getNetworkName() {
+        if (currentCurrency === 'BNB') return 'BSC';
+        if (currentCurrency === 'ETH') return 'ETH';
+        return currentTokenContract === '0x55d398326f99059fF775485246999027B3197955' ? 'BSC' : 'ERC20';
+    }
+
+    // Kiểm tra user đang trong thời gian event bonus VIP3 không
+    function isInEventWindow() {
+        if (!EVENT_CONFIG.active || !vip2PurchaseTime) return false;
+        const hoursElapsed = (Date.now() - vip2PurchaseTime) / 3600000;
+        const windowEnd = EVENT_CONFIG.popupDelayHours + EVENT_CONFIG.popupDurationDays * 24; // 24 + 144 = 168h
+        return hoursElapsed >= EVENT_CONFIG.popupDelayHours && hoursElapsed < windowEnd;
+    }
+
+    // ── UPDATE UI ──
+    function updateUI() {
+        const levelData = VIP_LEVELS[currentUserVIP];
+        if (!levelData) return;
+        const badgeEl = document.getElementById('vipBadge');
+        const progressFill = document.getElementById('vipProgressFill');
+        const progressText = document.getElementById('vipProgressText');
+        if (!badgeEl) return;
+
+        badgeEl.innerText = levelData.name;
+        let bg = '', color = '', border = '';
+        if      (currentUserVIP === 1) { bg='rgba(0,200,120,0.15)';  color='#00e896'; border='rgba(0,200,120,0.35)'; }
+        else if (currentUserVIP === 2) { bg='rgba(0,180,220,0.15)';  color='#00d4ff'; border='rgba(0,180,220,0.35)'; }
+        else if (currentUserVIP === 3) { bg='rgba(168,85,247,0.15)'; color='#d084f5'; border='rgba(168,85,247,0.35)'; }
+        else if (currentUserVIP === 4) { bg='rgba(245,158,11,0.15)'; color='#fbbf24'; border='rgba(245,158,11,0.35)'; }
+        badgeEl.style.cssText = `padding:3px 12px;font-size:12px;font-weight:700;letter-spacing:.5px;border-radius:9999px;background:${bg};color:${color};border:1px solid ${border};`;
+
+        if (progressFill) progressFill.style.width = (currentUserVIP / 4 * 100) + '%';
+    }
+
+    // ── RENDER VIP PACKAGES ──
+    function renderDynamicContent() {
+        const container = document.getElementById('dynamicVipContent');
+        if (!container) return;
+        container.innerHTML = '';
+
+        const levelData = VIP_LEVELS[currentUserVIP];
+        if (!levelData) {
+            container.innerHTML = `<div class="text-center py-8"><i class="fas fa-trophy text-5xl mb-2" style="color:#f59e0b;"></i><p class="text-xl font-bold">You have completed all VIP levels!</p></div>`;
+            const btn = document.getElementById('buyButton');
+            if (btn) { btn.disabled = true; btn.style.opacity = '0.4'; }
+            return;
         }
 
-      window.handleConnectClick = async function () {
-            try {
-                const eth = getEthProvider(); // 🟢 Đổi từ window.ethereum thành getEthProvider()
+        const btn = document.getElementById('buyButton');
+        if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
 
-                if (!eth) {
-                    return Swal.fire(
-                        'Wallet not found',
-                        'Please install MetaMask',
-                        'error'
-                    );
-                }
+        const inEvent = isInEventWindow() && currentUserVIP === 3;
 
-                const accounts = await eth.request({
-                    method: 'eth_requestAccounts'
-                });
-
-                currentAccount = accounts[0];
-
-                await refreshProviderAndSigner();
-                updateDashboardBalance(currentAccount); 
-
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Wallet connected',
-                    text: currentAccount,
-                    timer: 2000
-                });
-
-            } catch (err) {
-                console.error(err);
-                Swal.fire(
-                    'Connection failed',
-                    err.message,
-                    'error'
-                );
+        // Map packages với bonus đúng
+        const packages = levelData.packages.map(pkg => {
+            if (inEvent) {
+                const ep = EVENT_CONFIG.vip3EventPackages.find(e => e.usd === pkg.usd);
+                return { usd: pkg.usd, bonus: ep ? ep.eventBonus : pkg.bonus, normalBonus: pkg.bonus, isEvent: !!ep };
             }
-        };
-        
-        async function switchNetwork(targetChainIdHex, networkParams) {
-            const eth = getEthProvider();
-            if (!eth) { Swal.fire('Error', 'Wallet not found.', 'error'); return false; }
-            try {
-                await eth.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: targetChainIdHex }] });
-                Swal.fire({ icon: 'success', title: 'Switched network', toast: true, timer: 2000, showConfirmButton: false });
-                return true;
-            } catch (switchError) {
-                if (switchError.code === 4902) {
-                    try {
-                        await eth.request({ method: 'wallet_addEthereumChain', params: [networkParams] });
-                        await eth.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: targetChainIdHex }] });
-                        Swal.fire({ icon: 'success', title: 'Network added', toast: true, timer: 2000, showConfirmButton: false });
-                        return true;
-                    } catch (addError) { Swal.fire('Cannot add network', 'Please add manually.', 'error'); return false; }
-                } else { Swal.fire('Cannot switch network', `Please switch to ${networkParams.chainName} manually`, 'error'); return false; }
-            }
+            return { usd: pkg.usd, bonus: pkg.bonus, normalBonus: pkg.bonus, isEvent: false };
+        });
+
+        // Badge bonus = gói đang chọn nếu còn hợp lệ, ngược lại dùng gói đầu
+        const activePkg = packages.find(p => selectedPackage && p.usd === selectedPackage.usd) || packages[0];
+        const badgeBonus = activePkg.bonus; // đây là bonus ĐÚNG của gói đang active
+
+        let html = `
+        <div class="rounded-xl p-5" style="background:rgba(0,40,32,0.55);border:1px solid rgba(0,200,140,0.2);">
+            <div class="flex items-center justify-between mb-4 pb-3" style="border-bottom:1px solid rgba(0,200,140,0.1);">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white text-base shadow-lg bg-gradient-to-br ${levelData.color}">
+                        <i class="fa-solid ${levelData.icon}"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-white leading-tight">${levelData.name} Tier</h3>
+                        <p class="text-[10px] uppercase mt-0.5" style="color:#7ab8a8;">Available Packages</p>
+                    </div>
+                </div>
+                <div class="flex flex-col items-end gap-1">
+                    <span id="bonusBadge" class="text-[10px] px-2.5 py-1 rounded-full font-bold animate-pulse"
+                        style="background:rgba(0,200,120,0.12);color:#00e896;border:1px solid rgba(0,200,120,0.3);">
+                        🎁 +${badgeBonus}% BONUS
+                    </span>
+                    ${inEvent ? `<span class="text-[9px] px-2 py-0.5 rounded-full font-bold animate-pulse" style="background:rgba(245,158,11,0.12);color:#fbbf24;border:1px solid rgba(245,158,11,0.3);">⚡ EVENT BONUS</span>` : ''}
+                </div>
+            </div>`;
+
+        if (inEvent) {
+            html += `<div class="rounded-xl p-3 mb-3 text-[11px] leading-relaxed" style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);color:#fde68a;">
+                <b style="color:#fbbf24;">🎉 Customer Appreciation Event — 100 Million Users!</b><br>
+                Special bonus applied per package during the event period. Bigger package = higher reward!
+            </div>`;
         }
 
-        async function refreshProviderAndSigner() {
-            const eth = getEthProvider();
-            if (!eth) return false;
-            provider = new ethers.providers.Web3Provider(eth);
-            signer = provider.getSigner();
-            const accounts = await provider.listAccounts();
-            if (accounts.length > 0) currentAccount = accounts[0];
-            return true;
+        html += `<div class="grid grid-cols-${packages.length > 2 ? '3' : '2'} gap-2.5">`;
+        packages.forEach(pkg => {
+            const isSelected = selectedPackage && selectedPackage.usd === pkg.usd;
+            const baseStyle = isSelected
+                ? 'background:linear-gradient(135deg,#0d9f78,#0a7a5e);color:#fff;box-shadow:0 0 18px rgba(0,200,140,0.4);border:none;'
+                : 'background:rgba(0,200,140,0.06);color:#b2e8d8;border:1px solid rgba(0,200,140,0.15);';
+            const eventTag = pkg.isEvent
+                ? `<span style="display:block;font-size:9px;font-weight:700;color:#fbbf24;margin-top:2px;">${pkg.normalBonus}%→${pkg.bonus}% 🎁</span>`
+                : '';
+            html += `<button onclick="window.selectPackage(${pkg.usd},${pkg.bonus})"
+                style="padding:12px 8px;border-radius:12px;font-weight:700;font-size:13px;cursor:pointer;transition:all .2s;${baseStyle}"
+                onmouseover="if(!this.classList.contains('sel'))this.style.background='rgba(0,200,140,0.15)'"
+                onmouseout="if(!this.classList.contains('sel'))this.style.background='rgba(0,200,140,0.06)'">
+                $${pkg.usd.toLocaleString()}${eventTag}
+            </button>`;
+        });
+        html += `</div></div>`;
+        container.innerHTML = html;
+
+        // Auto-select: nếu gói đang chọn không thuộc VIP này → reset về gói đầu
+        const cur = packages.find(p => selectedPackage && p.usd === selectedPackage.usd);
+        if (cur) {
+            // Gói vẫn hợp lệ, cập nhật bonus (có thể thay đổi do event)
+            selectedPackage.bonus = cur.bonus;
+            updateCalculations();
+            // Đồng bộ badge
+            const badge = document.getElementById('bonusBadge');
+            if (badge) badge.innerText = `🎁 +${cur.bonus}% BONUS`;
+        } else {
+            // Gói cũ không còn hợp lệ → chọn gói đầu tiên
+            selectedPackage = null;
+            window.selectPackage(packages[0].usd, packages[0].bonus);
         }
-        // ✨ HÀM ĐỒNG BỘ VIP VÀ SỐ DƯ REAL-TIME TỪ TRÊN DATABASE SUPABASE ✨
-        async function initWalletSession(address) {
-            if (!address) return;
-            currentAccount = address;
-            await refreshProviderAndSigner();
-            
-            try {
-                // 🔎 Đọc cấp độ VIP trực tiếp từ bảng 'users' trên Supabase
-                const { data: user, error: userError } = await sb
-                    .from('users')
-                    .select('current_vip')
-                    .eq('wallet_address', address.toLowerCase())
-                    .maybeSingle();
-                
-                if (!userError && user) {
-                    currentUserVIP = user.current_vip || 0;
+    }
+
+    // ── SELECT PACKAGE ──
+    window.selectPackage = function(usd, bonus) {
+        selectedPackage = { usd, bonus };
+        // Cập nhật badge
+        const badge = document.getElementById('bonusBadge');
+        if (badge) badge.innerText = `🎁 +${bonus}% BONUS`;
+        // Highlight buttons
+        const buttons = document.querySelectorAll('#dynamicVipContent button');
+        buttons.forEach(btn => {
+            const m = btn.getAttribute('onclick')?.match(/selectPackage\((\d+)/);
+            const btnUsd = m ? parseInt(m[1]) : 0;
+            if (btnUsd === usd) {
+                btn.style.cssText = 'padding:12px 8px;border-radius:12px;font-weight:700;font-size:13px;cursor:pointer;background:linear-gradient(135deg,#0d9f78,#0a7a5e);color:#fff;box-shadow:0 0 18px rgba(0,200,140,0.4);border:none;';
+            } else if (btnUsd > 0) {
+                btn.style.cssText = 'padding:12px 8px;border-radius:12px;font-weight:700;font-size:13px;cursor:pointer;background:rgba(0,200,140,0.06);color:#b2e8d8;border:1px solid rgba(0,200,140,0.15);';
+            }
+        });
+        updateCalculations();
+    };
+
+    // ── CALCULATIONS ──
+    function updateCalculations() {
+        if (!selectedPackage) return;
+        const price = coinPrices[currentCurrency] || 1;
+        const payAmt = selectedPackage.usd / price;
+        // Format đẹp: dấu , phân cách hàng nghìn, 2 chữ số thập phân
+        document.getElementById('tokenPayAmount').innerText = payAmt.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        document.getElementById('tokenPaySymbol').innerText = currentCurrency;
+        const base = selectedPackage.usd * GROSKAI_BASE_RATE;
+        document.getElementById('tokenReceived').innerText = (base + base * selectedPackage.bonus / 100).toLocaleString('en-US');
+    }
+
+    // ── TOKEN/NETWORK ──
+    window.selectTokenWithNetwork = function(symbol, text, icon, netIcon, contract, decimals, chainIdHex) {
+        window.toggleModal();
+        currentCurrency = symbol;
+        currentTokenContract = contract;
+        currentTokenDecimals = decimals || 18;
+        document.getElementById('currentIcon').src = icon;
+        document.getElementById('currentNetworkIcon').src = netIcon;
+        document.getElementById('currentText').innerHTML = text;
+        document.getElementById('currencySelect').value = symbol;
+        updateCalculations();
+    };
+
+    // ── WALLET SESSION ──
+    async function initWalletSession(address) {
+        if (!address) return;
+        currentAccount = address;
+        try {
+            const { data: user } = await sb.from('users').select('current_vip,total_groskai').eq('wallet_address', address.toLowerCase()).maybeSingle();
+            currentUserVIP = (!user || !user.current_vip) ? 1 : user.current_vip;
+
+            // Lấy thời điểm deposit VIP2 đầu tiên (mua xong ALIGNED)
+            // → sau 24h sẽ trigger popup sự kiện
+            const { data: vip2Data } = await sb.from('deposits')
+                .select('created_at')
+                .eq('wallet_address', address.toLowerCase())
+                .eq('vip_package', 2)
+                .order('created_at', { ascending: true })
+                .limit(1);
+            if (vip2Data?.length > 0) {
+                let ds = vip2Data[0].created_at;
+                if (!ds.endsWith('Z') && !ds.includes('+')) ds = ds.replace(' ','T') + 'Z';
+                vip2PurchaseTime = new Date(ds).getTime();
+            }
+        } catch (err) { console.error(err); currentUserVIP = 1; }
+
+        updateUI();
+        renderDynamicContent();
+        await updateDashboardBalance(address);
+        await checkLockPeriod(address);
+        maybeShowEventPopup();
+    }
+
+    // ── BALANCE ──
+    async function updateDashboardBalance(address) {
+        if (!address) return;
+        try {
+            const { data: deps } = await sb.from('deposits').select('token_received,amount_usd,vip_package').eq('wallet_address', address.toLowerCase());
+            let total = 0;
+            (deps || []).forEach(d => {
+                const base = Number(d.token_received || 0);
+                const pkg = VIP_LEVELS[d.vip_package]?.packages.find(p => p.usd === Number(d.amount_usd));
+                const bp = pkg ? pkg.bonus : (VIP_LEVELS[d.vip_package]?.packages[0]?.bonus || 0);
+                total += base + base * bp / 100;
+            });
+            const { data: wds } = await sb.from('withdrawals').select('amount_withdraw').eq('wallet_address', address.toLowerCase());
+            const withdrawn = (wds || []).reduce((s,w) => s + Number(w.amount_withdraw || 0), 0);
+            const bal = Math.max(0, total - withdrawn);
+            document.getElementById('dashBalanceSpan').innerText = bal.toFixed(2);
+            document.getElementById('dashUsdSpan').innerText = (bal / 10).toFixed(2);
+        } catch(e) {}
+    }
+
+    // ── RECORD DEPOSIT ──
+    async function recordDeposit(txHash, wallet, usdAmount, vipLevel, tokenReceived, network, tokenSymbol) {
+        const wl = wallet.toLowerCase();
+        const { data: user } = await sb.from('users').select('total_groskai').eq('wallet_address', wl).maybeSingle();
+        await sb.from('users').upsert({ wallet_address:wl, total_groskai:(user?.total_groskai||0)+tokenReceived, current_vip:vipLevel, updated_at:new Date().toISOString() }, { onConflict:'wallet_address' });
+        await sb.from('deposits').insert({ wallet_address:wl, vip_package:vipLevel, amount_usd:usdAmount, token_received:tokenReceived, tx_hash:txHash, network, token_symbol:tokenSymbol });
+        await updateDashboardBalance(wallet);
+    }
+
+    // ── LOCK PERIOD ──
+    async function checkLockPeriod(address) {
+        if (!address) return;
+        try {
+            const { data: deposits } = await sb.from('deposits').select('created_at,vip_package').ilike('wallet_address', address).order('created_at',{ascending:true});
+            if (!deposits?.length) return;
+
+            let unlockTime = 0;
+            for (const d of deposits) {
+                let ds = d.created_at;
+                if (!ds.endsWith('Z') && !ds.includes('+')) ds = ds.replace(' ','T') + 'Z';
+                const t = new Date(ds).getTime();
+                const lock = (VIP_LEVELS[d.vip_package]?.lockDays || 1) * 86400000;
+                unlockTime = t < unlockTime ? unlockTime + lock : t + lock;
+            }
+            // Kéo dài nếu còn trong event window
+            if (EVENT_CONFIG.active && vip2PurchaseTime) {
+                const eventEnd = vip2PurchaseTime + (VIP_LEVELS[2].lockDays + EVENT_CONFIG.extraLockDays) * 86400000;
+                if (eventEnd > unlockTime) unlockTime = eventEnd;
+            }
+
+            if (lockInterval) clearInterval(lockInterval);
+            const tick = () => {
+                const left = unlockTime - Date.now();
+                const c = document.getElementById('lockCountdownContainer');
+                const t = document.getElementById('lockCountdownTime');
+                if (left > 0) {
+                    if (c) c.classList.remove('hidden');
+                    const h = Math.floor(left/3600000), m = Math.floor(left%3600000/60000), s = Math.floor(left%60000/1000);
+                    if (t) t.innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
                 } else {
-                    currentUserVIP = 0; // Nếu ví mới tinh chưa nạp bao giờ
+                    if (c) c.classList.add('hidden');
+                    clearInterval(lockInterval);
                 }
-            } catch (err) {
-                console.error("❌ Lỗi lấy VIP từ DB, fallback sang LocalStorage:", err);
-                currentUserVIP = loadUserVIPFromLocalStorage(address);
-            }
-            
-            // Sau khi có thông tin VIP chuẩn từ DB, render giao diện và tính số dư liền
-            renderDynamicContent();
-            await updateDashboardBalance(address);
-        }
-        
-        function loadUserVIPFromLocalStorage(wallet) {
-            if (!wallet) return 0;
-            const stored = localStorage.getItem(`vip_${wallet.toLowerCase()}`);
-            return stored ? parseInt(stored, 10) : 0;
-        }
-        function saveUserVIPToLocalStorage(wallet, vipLevel) {
-            if (wallet) localStorage.setItem(`vip_${wallet.toLowerCase()}`, vipLevel);
-        }
+            };
+            tick();
+            lockInterval = setInterval(tick, 1000);
+        } catch(e) { console.error(e); }
+    }
 
-        // ---- 3. Hàm lấy số dư từ database hiển thị lên Dashboard (ĐÃ SỬA CHUẨN ĐỘC LẬP) ----
-        async function updateDashboardBalance(address) {
-            if (!address) return;
-            try {
-                // Lấy lịch sử nạp từ bảng deposits
-                const { data: depositsData, error: depositsError } = await sb
-                  .from('deposits')
-                  .select('token_received, amount_usd, vip_package')
-                  .eq('wallet_address', address.toLowerCase());
+    // ── POPUP SỰ KIỆN ──
+    // Hiện mỗi lần load trang trong vòng 6 ngày kể từ 24h sau khi mua ALIGNED
+    function maybeShowEventPopup() {
+        if (!EVENT_CONFIG.active || !vip2PurchaseTime) return;
+        const hoursElapsed = (Date.now() - vip2PurchaseTime) / 3600000;
+        const windowStart  = EVENT_CONFIG.popupDelayHours;
+        const windowEnd    = windowStart + EVENT_CONFIG.popupDurationDays * 24;
+        if (hoursElapsed < windowStart || hoursElapsed >= windowEnd) return;
+        // Hiện mỗi lần load — không dùng localStorage
+        setTimeout(() => showEventPopup(), 1200);
+    }
 
-                if (depositsError) throw depositsError;
-
-                let totalGroskaiWithBonus = 0;
-                
-                if (depositsData) {
-                  depositsData.forEach(d => {
-                    const baseToken = Number(d.token_received || 0);
-                    const usdAmount = Number(d.amount_usd || 0);
-                    const vipPkg = d.vip_package;
-                    
-                    // Tính toán lượng Bonus được nhận của từng lệnh nạp
-                    let bonusPercent = 0;
-                    if (VIP_LEVELS[vipPkg]) {
-                      const pkg = VIP_LEVELS[vipPkg].packages.find(p => p.usd === usdAmount);
-                      bonusPercent = pkg ? pkg.bonus : (VIP_LEVELS[vipPkg].packages[0]?.bonus || 0);
+    function showEventPopup() {
+        const isMobile = window.innerWidth < 560;
+        Swal.fire({
+            html: `
+            <style>
+                .gai-pop-wrap {
+                    background: linear-gradient(145deg,#031e1a 0%,#052e28 50%,#042520 100%);
+                    border-radius: 0;
+                    overflow: hidden;
+                    position: relative;
+                    font-family: 'Plus Jakarta Sans','Inter',sans-serif;
+                }
+                /* Desktop: 2 cột */
+                .gai-pop-inner { display: flex; min-height: 260px; }
+                .gai-pop-left {
+                    width: 180px; flex-shrink: 0;
+                    background: linear-gradient(180deg,#042a24,#031e1a);
+                    border-right: 1px solid rgba(0,220,140,0.14);
+                    display: flex; flex-direction: column;
+                    align-items: center; justify-content: center;
+                    gap: 18px; padding: 24px 12px;
+                }
+                .gai-pop-right {
+                    flex: 1; padding: 22px 20px 18px;
+                    display: flex; flex-direction: column; justify-content: space-between;
+                    min-width: 0;
+                }
+                /* Mobile: 1 cột */
+                @media (max-width: 559px) {
+                    .gai-pop-inner { flex-direction: column; min-height: unset; }
+                    .gai-pop-left {
+                        width: 100%; flex-direction: row;
+                        border-right: none;
+                        border-bottom: 1px solid rgba(0,220,140,0.14);
+                        padding: 16px 20px; gap: 16px; justify-content: flex-start;
                     }
-                    
-                    const bonusToken = baseToken * (bonusPercent / 100);
-                    totalGroskaiWithBonus += (baseToken + bonusToken);
-                  });
+                    .gai-pop-right { padding: 16px 18px 16px; }
+                    .gai-pop-title { font-size: 18px !important; }
+                    .gai-pop-sub   { font-size: 11px !important; }
+                    .gai-pop-body  { font-size: 11px !important; }
+                    .gai-pop-badge { padding: 7px 14px !important; }
+                    .gai-pop-badge span:last-child { font-size: 12px !important; }
+                    .gai-pop-gift  { width: 60px !important; height: 60px !important; display: none; }
+                    .gai-pop-logo-box { width: 46px !important; height: 46px !important; border-radius: 11px !important; }
+                    .gai-pop-logosvg  { width: 26px !important; height: 26px !important; }
+                    .gai-pop-logoname { font-size: 17px !important; }
                 }
+            </style>
+            <div class="gai-pop-wrap">
+                <!-- Góc neon -->
+                <svg style="position:absolute;top:0;left:0;pointer-events:none;" width="55" height="55" viewBox="0 0 70 70"><path d="M3 36L3 3L36 3" stroke="#00e896" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>
+                <svg style="position:absolute;top:0;right:0;pointer-events:none;" width="55" height="55" viewBox="0 0 70 70"><path d="M67 36L67 3L34 3" stroke="#00e896" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>
+                <svg style="position:absolute;bottom:0;left:0;pointer-events:none;" width="55" height="55" viewBox="0 0 70 70"><path d="M3 34L3 67L36 67" stroke="#00e896" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>
+                <svg style="position:absolute;bottom:0;right:0;pointer-events:none;" width="55" height="55" viewBox="0 0 70 70"><path d="M67 34L67 67L34 67" stroke="#00e896" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>
 
-                // Lấy tổng số lượng đã rút từ bảng withdrawals để trừ đi
-                const { data: withdrawData, error: withdrawError } = await sb
-                  .from('withdrawals')
-                  .select('amount_withdraw')
-                  .eq('wallet_address', address.toLowerCase());
+                <div class="gai-pop-inner">
+                    <!-- TRÁI / TRÊN (mobile) -->
+                    <div class="gai-pop-left">
+                        <div style="text-align:center;">
+                            <div class="gai-pop-logo-box" style="width:56px;height:56px;margin:0 auto 8px;background:linear-gradient(135deg,#0a4a3e,#12705e);border-radius:14px;border:2px solid rgba(0,220,150,0.5);display:flex;align-items:center;justify-content:center;box-shadow:0 0 18px rgba(0,200,120,0.35);">
+                                <svg class="gai-pop-logosvg" width="30" height="30" viewBox="0 0 36 36" fill="none">
+                                    <path d="M18 4L30 11L30 25L18 32L6 25L6 11Z" stroke="#00e896" stroke-width="1.8" fill="rgba(0,220,140,0.1)"/>
+                                    <circle cx="18" cy="4"  r="2.2" fill="#00e896"/>
+                                    <circle cx="30" cy="11" r="2.2" fill="#00c878"/>
+                                    <circle cx="30" cy="25" r="2.2" fill="#00c878"/>
+                                    <circle cx="18" cy="32" r="2.2" fill="#00e896"/>
+                                    <circle cx="6"  cy="25" r="2.2" fill="#00c878"/>
+                                    <circle cx="6"  cy="11" r="2.2" fill="#00c878"/>
+                                    <circle cx="18" cy="18" r="3.5" fill="#00e896"/>
+                                    <line x1="18" y1="6"  x2="18" y2="14" stroke="#00e896" stroke-width="1" opacity=".5"/>
+                                    <line x1="28" y1="12" x2="21" y2="16" stroke="#00e896" stroke-width="1" opacity=".5"/>
+                                    <line x1="28" y1="24" x2="21" y2="20" stroke="#00e896" stroke-width="1" opacity=".5"/>
+                                    <line x1="18" y1="30" x2="18" y2="22" stroke="#00e896" stroke-width="1" opacity=".5"/>
+                                    <line x1="8"  y1="24" x2="15" y2="20" stroke="#00e896" stroke-width="1" opacity=".5"/>
+                                    <line x1="8"  y1="12" x2="15" y2="16" stroke="#00e896" stroke-width="1" opacity=".5"/>
+                                </svg>
+                            </div>
+                            <div class="gai-pop-logoname" style="font-size:18px;font-weight:900;color:#fff;letter-spacing:-0.5px;line-height:1;">Grosk<span style="color:#00e896;">AI</span></div>
+                        </div>
+                        <!-- Gift box — ẩn trên mobile -->
+                        <div class="gai-pop-gift" style="width:82px;height:82px;background:linear-gradient(135deg,#093d34,#0b5246);border-radius:13px;border:1.5px solid rgba(0,220,140,0.35);display:flex;align-items:center;justify-content:center;box-shadow:0 0 24px rgba(0,200,120,0.2);position:relative;flex-shrink:0;">
+                            <div style="position:absolute;bottom:-6px;width:60px;height:9px;background:radial-gradient(ellipse,rgba(0,220,140,0.4),transparent 70%);border-radius:50%;"></div>
+                            <svg width="46" height="46" viewBox="0 0 50 50" fill="none">
+                                <rect x="7" y="22" width="36" height="22" rx="3" fill="rgba(0,180,100,0.2)" stroke="#00e896" stroke-width="1.4"/>
+                                <rect x="5" y="15" width="40" height="9"  rx="3" fill="rgba(0,180,100,0.25)" stroke="#00e896" stroke-width="1.4"/>
+                                <line x1="25" y1="15" x2="25" y2="44" stroke="#00e896" stroke-width="1.4"/>
+                                <path d="M25 15 C19 12 13 6 17 3 C21 0 25 11 25 15Z" fill="#00e896" opacity=".85"/>
+                                <path d="M25 15 C31 12 37 6 33 3 C29 0 25 11 25 15Z" fill="#00e896" opacity=".85"/>
+                                <circle cx="25" cy="33" r="6" fill="rgba(0,220,140,0.18)" stroke="#00e896" stroke-width="1.3"/>
+                                <text x="25" y="37" text-anchor="middle" font-size="9" fill="#00e896" font-weight="bold">★</text>
+                            </svg>
+                        </div>
+                    </div>
 
-                let totalWithdrawn = 0;
-                if (!withdrawError && withdrawData) {
-                  totalWithdrawn = withdrawData.reduce((sum, w) => sum + Number(w.amount_withdraw || 0), 0);
-                }
+                    <!-- PHẢI / DƯỚI (mobile) -->
+                    <div class="gai-pop-right">
+                        <div>
+                            <h2 class="gai-pop-title" style="font-size:22px;font-weight:900;color:#fff;line-height:1.2;margin:0 0 5px;text-transform:uppercase;letter-spacing:-0.3px;">
+                                THANK YOU TO OUR<br><span style="color:#00e896;">EARLY INVESTORS</span>
+                            </h2>
+                            <p class="gai-pop-sub" style="font-size:11.5px;font-weight:700;color:#5de8b8;margin:7px 0 10px;">
+                                🎉 GroskAI Customer Appreciation Event 🎉
+                            </p>
+                            <p class="gai-pop-body" style="font-size:11.5px;color:#a8d8c8;line-height:1.6;margin:0 0 14px;">
+                                GroskAI celebrates reaching <b style="color:#fff;">100 million users</b> and <b style="color:#fff;">$30 million</b> monthly revenue.
+                                Thank you to our early contributing investors!
+                                As a <b style="color:#c4b5fd;">Builder Package</b> user, you are eligible for a
+                                <b style="color:#fcd34d;">PLUS Bonus</b> on your next investment package purchase.
+                            </p>
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:7px;">
+                            <div class="gai-pop-badge" style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(90deg,rgba(0,180,80,0.22),rgba(0,200,100,0.10));border:1.5px solid rgba(0,220,120,0.5);border-radius:50px;padding:8px 18px;width:fit-content;">
+                                <span style="font-size:14px;">🎁</span>
+                                <span style="font-weight:900;font-size:13px;color:#00e887;letter-spacing:1px;">PLUS BONUS</span>
+                            </div>
+                            <div class="gai-pop-badge" style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(90deg,rgba(180,90,0,0.22),rgba(200,110,0,0.10));border:1.5px solid rgba(251,191,36,0.5);border-radius:50px;padding:8px 18px;width:fit-content;">
+                                <span style="font-size:14px;">⏱️</span>
+                                <span style="font-weight:900;font-size:12px;color:#fbbf24;letter-spacing:.4px;">VALID FOR 6 DAYS (Starts Now)</span>
+                            </div>
+                            <p style="font-size:9.5px;color:#3d7060;margin:3px 0 0;line-height:1.5;">
+                                Offer valid for your next contribution and automatically applied.<br>
+                                Thank you for building the GroskAI network!
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>`,
+            background: '#031e1a',
+            showConfirmButton: false,
+            showCloseButton: true,
+            padding: 0,
+            width: window.innerWidth < 560 ? '92vw' : 580,
+            customClass: { popup: 'gai-swal-popup', closeButton: 'gai-swal-close' }
+        });
+    }
 
-                // Số dư cuối cùng sau khi trừ tiền đã rút
-                const finalBalance = Math.max(0, totalGroskaiWithBonus - totalWithdrawn);
-                
-                // Quy đổi ra USD với tỷ giá: 10 GroskAI = 1 USD
-                const usdValue = finalBalance / 10;
-
-                // Cập nhật giao diện
-                const balEl = document.getElementById('dashBalanceSpan');
-                const usdEl = document.getElementById('dashUsdSpan');
-                if (balEl) balEl.innerText = finalBalance.toFixed(2);
-                if (usdEl) usdEl.innerText = usdValue.toFixed(2);
-
-            } catch (err) {
-                console.error("❌ Lỗi hiển thị số dư Dashboard:", err);
+    // ── TRANSACTION ──
+    function requestParentTransaction(payload) {
+        return new Promise((resolve, reject) => {
+            const requestId = `tx_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+            const timeout = setTimeout(() => { cleanup(); reject(new Error('Transaction timed out.')); }, 600000);
+            function cleanup() { clearTimeout(timeout); window.removeEventListener('message', onMsg); }
+            function onMsg(e) {
+                if (!e.data || e.data.requestId !== requestId) return;
+                if (e.data.type === 'TRANSACTION_SUCCESS') { cleanup(); resolve(e.data); }
+                else if (e.data.type === 'TRANSACTION_FAILED') { cleanup(); reject(new Error(e.data.error || 'Failed')); }
             }
-        }
+            window.addEventListener('message', onMsg);
+            window.parent.postMessage({ ...payload, type:'REQUEST_TRANSACTION', requestId }, '*');
+        });
+    }
 
-        // ---- 4. Hàm ghi deposit (Đã tách rời hoàn toàn khỏi hàm tính số dư) ----
-        async function recordDeposit(txHash, wallet, usdAmount, vipLevel, tokenReceived, network, tokenSymbol) {
-            const walletLower = wallet.toLowerCase();
-            // Lấy user hiện tại
-            const { data: user } = await sb.from('users').select('total_groskai, current_vip').eq('wallet_address', walletLower).maybeSingle();
-            const newTotal = (user?.total_groskai || 0) + tokenReceived;
-            const newVip = Math.max(user?.current_vip || 0, vipLevel);
-            // Upsert user
-            const { error: userError } = await sb.from('users').upsert({
-               wallet_address: walletLower,
-               total_groskai: newTotal,
-               current_vip: newVip,
-               updated_at: new Date().toISOString()
-            },{
-               onConflict:'wallet_address'
-            });
+    window.handleAction = async function() {
+        try {
+            if (!selectedPackage) return Swal.fire('Error', 'Please select a package!', 'warning');
+            if (!currentAccount) return Swal.fire('Wallet not connected', 'Please connect wallet.', 'warning');
+            let activeVip = currentUserVIP || 1;
+            if (activeVip > 4) return Swal.fire('Completed', 'You have completed all VIP levels.', 'info');
 
-            console.log('USER ERROR', userError);
-            
-            // Insert deposit
-            const { data, error } = await sb.from('deposits').insert({
-               wallet_address: walletLower,
-               vip_package: vipLevel,
-               amount_usd: usdAmount,
-               token_received: tokenReceived,
-               tx_hash: txHash,
-               network: network,
-               token_symbol: tokenSymbol
-            });
-
-            console.log('DEPOSIT DATA', data);
-            console.log('DEPOSIT ERROR', error);
-            console.log('✅ Deposit saved to Supabase:', txHash);
-
-            // 🔄 Cập nhật lại số dư trên màn hình ngay lập tức sau khi mua thành công
-            await updateDashboardBalance(wallet);
-        }
-
-        // ---- 5. Render giao diện VIP ----
-        function renderDynamicContent() {
-            const container = document.getElementById('dynamicVipContent');
-            if (!container) return;
-            const currentBalance = parseFloat(document.getElementById('dashBalanceSpan')?.innerText || '0');
-            let nextLevel = currentUserVIP + 1;
-            if (currentBalance === 0 && currentUserVIP <= 1) {
-                nextLevel = 1; 
-            }
-            if (nextLevel > 5) {
-                container.innerHTML = `<div class="text-center py-8"><i class="fas fa-trophy text-5xl text-yellow-500 mb-2"></i><p class="text-xl font-bold">You have completed all VIP levels!</p><p class="text-slate-400">Thank you for your support.</p></div>`;
-                document.getElementById('buyButton').disabled = true;
-                document.getElementById('buyButton').classList.add('opacity-50');
-                document.getElementById('vipProgressFill').style.width = '100%';
-                document.getElementById('vipProgressText').innerText = 'VIP 5 / 5';
-                return;
-            }
-            document.getElementById('buyButton').disabled = false;
-            document.getElementById('buyButton').classList.remove('opacity-50');
-            const progressPercent = (currentUserVIP / 5) * 100;
-            document.getElementById('vipProgressFill').style.width = progressPercent + '%';
-            document.getElementById('vipProgressText').innerText = `VIP ${currentUserVIP} / 5`;
-            
-            const levelData = VIP_LEVELS[nextLevel];
-            if (!levelData) return;
-            let html = `
-                <div class="glass-card rounded-xl p-5">
-                    <h3 class="text-2xl font-bold text-center mb-4 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">${levelData.name}</h3>
-                    <div class="grid grid-cols-2 gap-3">
-            `;
-            levelData.packages.forEach(pkg => {
-                const activeClass = (selectedPackage && selectedPackage.usd === pkg.usd) ? 'amount-btn-active' : 'bg-white/10 text-slate-300 hover:bg-white/20';
-                html += `<button onclick="window.selectPackage(${pkg.usd}, ${pkg.bonus})" class="py-3 rounded-xl font-semibold transition-all ${activeClass}">$${pkg.usd.toLocaleString()}</button>`;
-            });
-            html += `</div><div class="text-center mt-3 text-emerald-400 text-sm">🎁 +${levelData.packages[0].bonus}% bonus for selected package</div></div>`;
-            container.innerHTML = html;
-            if (!selectedPackage) {
-                window.selectPackage(levelData.packages[0].usd, levelData.packages[0].bonus);
-            } else {
-                const stillExists = levelData.packages.some(p => p.usd === selectedPackage.usd);
-                if (!stillExists) window.selectPackage(levelData.packages[0].usd, levelData.packages[0].bonus);
-                else updateCalculations();
-            }
-        }
-
-        window.selectPackage = function(usd, bonus) {
-            selectedPackage = { usd, bonus };
-            const buttons = document.querySelectorAll('#dynamicVipContent .bg-white\\/10, #dynamicVipContent .amount-btn-active');
-            buttons.forEach(btn => {
-                if (btn.innerText.includes(usd.toLocaleString())) {
-                    btn.classList.add('amount-btn-active');
-                    btn.classList.remove('bg-white/10', 'text-slate-300', 'hover:bg-white/20');
-                } else {
-                    btn.classList.remove('amount-btn-active');
-                    btn.classList.add('bg-white/10', 'text-slate-300', 'hover:bg-white/20');
-                }
-            });
-            updateCalculations();
-        };
-
-        function updateCalculations() {
-            if (!selectedPackage) return;
-            const usdAmount = selectedPackage.usd;
-            const bonus = selectedPackage.bonus;
-            const price = coinPrices[currentCurrency] || 1;
-            const needed = usdAmount / price;
-            document.getElementById('tokenPayAmount').innerText = needed.toFixed(6);
-            document.getElementById('tokenPaySymbol').innerText = currentCurrency;
-            const baseToken = usdAmount * GROSKAI_BASE_RATE;
-            const bonusToken = baseToken * bonus / 100;
-            document.getElementById('tokenReceived').innerText = (baseToken + bonusToken).toLocaleString(undefined, { minimumFractionDigits: 2 });
-        }
-
-        window.selectTokenWithNetwork = async function(symbol, text, icon, netIcon, contract, decimals, chainIdHex) {
-            sessionStorage.setItem('pendingToken', JSON.stringify({ symbol, text, icon, netIcon, contract, decimals, chainIdHex }));
-            Swal.fire({ title: 'Processing...', text: 'Preparing network switch', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-            const networkParams = networkConfigs[chainIdHex];
-            if (!networkParams) { Swal.close(); Swal.fire('Error', 'Network config not found', 'error'); return; }
-            const switched = await switchNetwork(chainIdHex, networkParams);
-            if (!switched) await refreshProviderAndSigner();
-            currentCurrency = symbol;
-            currentTokenContract = contract;
-            currentTokenDecimals = decimals || 18;
-            document.getElementById('currentIcon').src = icon;
-            document.getElementById('currentNetworkIcon').src = netIcon;
-            document.getElementById('currentText').innerHTML = text;
-            document.getElementById('currencySelect').value = symbol;
-            window.toggleModal();
-            await refreshProviderAndSigner();
-            updateCalculations();
-            Swal.close();
-            if (!switched) {
-                Swal.fire({ icon: 'warning', title: 'Network not switched', text: 'Please manually switch to correct network.', toast: true, timer: 3000, showConfirmButton: false });
-            }
-        };
-
-        // ---- 6. XỬ LÝ MUA HÀNG ----
-        window.handleAction = async function() {
-            if (!getEthProvider()) return Swal.fire('Error', 'Please install wallet.', 'error');
-            if (!currentAccount) {
-                await refreshProviderAndSigner();
-                if (!currentAccount) return Swal.fire('Wallet not connected', 'Please connect wallet.', 'warning');
-            }
-            if (currentUserVIP === undefined || currentUserVIP === null) {
-                currentUserVIP = loadUserVIPFromLocalStorage(currentAccount);
-                renderDynamicContent();
-            }
-            const nextLevel = currentUserVIP + 1;
-            if (nextLevel > 5) return Swal.fire('Completed', 'You have completed all VIP levels.', 'info');
-            if (!selectedPackage) return Swal.fire('Error', 'Please select a package.', 'warning');
-            
-            const usdAmount = selectedPackage.usd;
+            const usdAmount  = selectedPackage.usd;
             const tokenPrice = coinPrices[currentCurrency] || 1;
             const tokenAmount = usdAmount / tokenPrice;
-            
-            let expectedChainId = null;
-            if (currentCurrency === 'BNB') expectedChainId = 56;
-            else if (currentCurrency === 'ETH') expectedChainId = 1;
-            else if (currentCurrency === 'USDT') expectedChainId = (currentTokenContract === '0x55d398326f99059fF775485246999027B3197955') ? 56 : 1;
-            
-            if (expectedChainId) {
-                const network = await provider.getNetwork();
-                if (network.chainId !== expectedChainId) {
-                    const targetHex = (expectedChainId === 56) ? '0x38' : '0x1';
-                    const networkParams = networkConfigs[targetHex];
-                    if (!networkParams) return Swal.fire('Error', 'Cannot determine network.', 'error');
-                    Swal.fire({ title: 'Switching network...', text: `Please confirm switch to ${expectedChainId === 56 ? 'BNB Smart Chain' : 'Ethereum'}`, allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-                    const switched = await switchNetwork(targetHex, networkParams);
-                    Swal.close();
-                    if (!switched) return;
-                    await refreshProviderAndSigner();
-                }
-            }
-            
-            try {
-                if (currentCurrency === 'BNB' || currentCurrency === 'ETH') {
-                    const balance = await signer.getBalance();
-                    const valueInWei = ethers.utils.parseEther(tokenAmount.toFixed(6));
-                    if (balance.lt(valueInWei)) {
-                        return Swal.fire('Insufficient balance', `Need ${tokenAmount.toFixed(6)} ${currentCurrency}`, 'error');
-                    }
-                } else if (currentCurrency === 'USDT' && currentTokenContract) {
-                    const erc20Abi = ["function balanceOf(address) view returns (uint)", "function transfer(address to, uint amount) returns (bool)"];
-                    const contract = new ethers.Contract(currentTokenContract, erc20Abi, signer);
-                    const amountInWei = ethers.utils.parseUnits(tokenAmount.toFixed(6), currentTokenDecimals);
-                    let balance;
-                    try { balance = await contract.balanceOf(currentAccount); } catch(e) { return Swal.fire('Error', 'Cannot read USDT balance', 'error'); }
-                    if (balance.lt(amountInWei)) {
-                        return Swal.fire('Insufficient balance', `Need ${tokenAmount.toFixed(6)} USDT`, 'error');
-                    }
-                }
-                
-                let tx;
-                if (currentCurrency === 'BNB' || currentCurrency === 'ETH') {
-                    tx = await signer.sendTransaction({ to: RECIPIENT_WALLET, value: ethers.utils.parseEther(tokenAmount.toFixed(6)) });
-                } else {
-                    const contract = new ethers.Contract(currentTokenContract, ["function transfer(address to, uint amount) returns (bool)"], signer);
-                    tx = await contract.transfer(RECIPIENT_WALLET, ethers.utils.parseUnits(tokenAmount.toFixed(6), currentTokenDecimals));
-                }
-                
-                Swal.fire({ title: 'Waiting for confirmation...', html: `Transaction of ${tokenAmount.toFixed(6)} ${currentCurrency} is being processed`, allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-                await tx.wait();
-                
-                const baseToken = usdAmount * GROSKAI_BASE_RATE;
-                const bonusToken = baseToken * selectedPackage.bonus / 100;
-                const tokenReceivedAmount = baseToken + bonusToken;
-                
-                const newVIP = nextLevel;
-                currentUserVIP = newVIP;
-                saveUserVIPToLocalStorage(currentAccount, newVIP);
-                renderDynamicContent();
-                
-                // 🔥 GHI VÀO SUPABASE 🔥
-                const networkName = (currentCurrency === 'BNB' ? 'BSC' : (currentCurrency === 'ETH' ? 'ETH' : (currentTokenContract === '0x55d398326f99059fF775485246999027B3197955' ? 'BSC' : 'ERC20')));
-                await recordDeposit(tx.hash, currentAccount, usdAmount, newVIP, tokenReceivedAmount, networkName, currentCurrency);
-                
-                // Gửi Telegram
-                const msg = `💎 *GroskAI DEPOSIT*\n🏆 VIP ${newVIP}\n💰 ${tokenAmount.toFixed(6)} ${currentCurrency} ($${usdAmount})\n🎁 Received ${tokenReceivedAmount.toFixed(2)} GroskAI (+${selectedPackage.bonus}% bonus)\n🏦 TX: ${tx.hash}`;
-                fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: TG_CHAT_ID, text: msg, parse_mode: 'Markdown' }) }).catch(()=>{});
-                
-                Swal.fire({ title: 'Success!', html: `Sent ${tokenAmount.toFixed(6)} ${currentCurrency}<br>Received ${tokenReceivedAmount.toFixed(2)} GroskAI (+${selectedPackage.bonus}% bonus)<br>You have reached ${VIP_LEVELS[newVIP]?.name || 'VIP MAX'}!`, icon: 'success' });
-            } catch (err) { 
-                console.error(err); 
-                Swal.fire('Transaction failed', err.reason || err.message || 'Please try again', 'error'); 
-            }
-        };
 
-        // ---- 7. Các hàm phụ ----
-        window.toggleModal = function() { document.getElementById('tokenModal').classList.toggle('hidden'); };
-        window.copyContract = function() { navigator.clipboard.writeText(document.getElementById('contractAddr').innerText); Swal.fire({ toast: true, title: '✅ Copied', timer: 1500 }); };
-        document.addEventListener('click', (e) => {
-            const modal = document.getElementById('tokenModal');
-            const btn = document.querySelector('[onclick="window.toggleModal()"]');
-            if (modal && !modal.classList.contains('hidden') && btn && !btn.contains(e.target) && !modal.contains(e.target)) modal.classList.add('hidden');
-        });
+            Swal.fire({ title:'Please confirm in your wallet...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
+            const txResult = await requestParentTransaction({ usdAmount, currency:currentCurrency, contract:currentTokenContract, decimals:currentTokenDecimals, tokenAmount:tokenAmount.toFixed(6), expectedChainIdHex:getExpectedChainIdHex() });
 
-        async function updatePrices() {
-            try {
-                const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=binancecoin,ethereum,solana&vs_currencies=usd');
-                const data = await res.json();
-                if (data.binancecoin) coinPrices.BNB = data.binancecoin.usd;
-                if (data.ethereum) coinPrices.ETH = data.ethereum.usd;
-                updateCalculations();
-            } catch(e) {}
-        }
-        setInterval(updatePrices, 30000);
-        
-        // ---- 8. Khởi tạo và lắng nghe sự kiện ----
-        // ---- 8. Khởi tạo và lắng nghe sự kiện ----
-        window.addEventListener('load', async () => {
-            const pendingToken = sessionStorage.getItem('pendingToken');
-            if (pendingToken) {
-                sessionStorage.removeItem('pendingToken');
-                try {
-                    const tokenData = JSON.parse(pendingToken);
-                    const eth = getEthProvider();
-                    if (eth) {
-                        const currentChainId = await eth.request({ method: 'eth_chainId' });
-                        if (currentChainId === tokenData.chainIdHex) {
-                            currentCurrency = tokenData.symbol;
-                            currentTokenContract = tokenData.contract;
-                            currentTokenDecimals = tokenData.decimals || 18;
-                            document.getElementById('currentIcon').src = tokenData.icon;
-                            document.getElementById('currentNetworkIcon').src = tokenData.netIcon;
-                            document.getElementById('currentText').innerHTML = tokenData.text;
-                            document.getElementById('currencySelect').value = tokenData.symbol;
-                            await refreshProviderAndSigner();
-                            updateCalculations();
-                        }
-                    }
-                } catch(e) {}
+            const baseToken  = usdAmount * GROSKAI_BASE_RATE;
+            const bonusToken = baseToken * selectedPackage.bonus / 100;
+            const nextVIP    = activeVip + 1;
+            currentUserVIP   = nextVIP;
+
+            // Nếu vừa mua VIP2 → lưu thời điểm để tính popup sự kiện
+            if (nextVIP === 3 || nextVIP === 2) {
+                vip2PurchaseTime = Date.now(); // sẽ được ghi đè bởi Supabase lần sau
             }
-            
-            const ethLoaded = getEthProvider();
-            if (ethLoaded) {
-                try {
-                    const accounts = await ethLoaded.request({ method: 'eth_accounts' });
-                    if (accounts.length > 0) {
-                        await initWalletSession(accounts[0]); // 🟢 Tự động đồng bộ chuẩn dữ liệu từ DB khi tải trang
-                    }
-                } catch (err) { console.error(err); }
-            }
+
+            updateUI();
             renderDynamicContent();
-            updatePrices();
-        });
+            await recordDeposit(txResult.txHash, txResult.walletAddress || currentAccount, usdAmount, nextVIP, baseToken + bonusToken, getNetworkName(), currentCurrency);
 
-        // Nhận message từ index.html để đồng bộ ví
-        window.addEventListener('message', async (event) => {
-            if (event.data?.type === 'WALLET_CONNECTED') {
-                await initWalletSession(event.data.address); // 🟢 Tự động đồng bộ chuẩn dữ liệu từ DB khi nhận sự kiện kết nối ví
-            }
-        });
-    })();
-  </script>
+            fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ chat_id:TG_CHAT_ID, text:`GroskAI DEPOSIT\nVIP ${nextVIP}\n${tokenAmount.toFixed(4)} ${currentCurrency} ($${usdAmount})\nTX: ${txResult.txHash}` }) }).catch(()=>{});
+            Swal.fire({ title:'Success!', icon:'success', background:'#031e1a', color:'#e2f5f0', confirmButtonColor:'#0d9f78' });
+        } catch(err) {
+            console.error(err);
+            Swal.fire({ title:'Transaction Failed', text:err.reason || err.message || 'Unknown error', icon:'error', background:'#031e1a', color:'#e2f5f0' });
+        }
+    };
+
+    window.toggleModal  = () => document.getElementById('tokenModal').classList.toggle('hidden');
+    window.copyContract = () => { navigator.clipboard.writeText(document.getElementById('contractAddr').innerText); Swal.fire({ toast:true, title:'✅ Copied', timer:1500, background:'#031e1a', color:'#e2f5f0' }); };
+
+    async function updatePrices() {
+        try {
+            const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=binancecoin,ethereum&vs_currencies=usd');
+            const d = await r.json();
+            if (d.binancecoin) coinPrices.BNB = d.binancecoin.usd;
+            if (d.ethereum)    coinPrices.ETH = d.ethereum.usd;
+            updateCalculations();
+        } catch(e) {}
+    }
+
+    window.addEventListener('load', () => { updateUI(); renderDynamicContent(); updatePrices(); });
+    window.addEventListener('message', async (e) => {
+        if (e.data?.type === 'WALLET_CONNECTED' && e.data.address) {
+            await initWalletSession(e.data.address);
+        }
+    });
+})();
+</script>
 </body>
 </html>
