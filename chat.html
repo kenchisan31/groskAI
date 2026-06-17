@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GroskAI Chat Box</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#050505] text-white flex items-center justify-center min-h-screen p-4">
+    <div class="w-full max-w-2xl bg-[#0d1117] rounded-3xl shadow-2xl overflow-hidden border border-gray-800">
+        <!-- Header -->
+        <div class="p-6 border-b border-gray-800 flex justify-between items-center bg-black/50">
+            <div>
+                <h1 class="text-xl font-bold text-blue-500">GroskAI</h1>
+                <!--<p class="text-xs text-gray-500 font-mono">Model: llama-3.1-70b-versatile</p>-->
+            </div>
+            <div class="text-xs bg-green-500/10 text-green-500 px-3 py-1 rounded-full border border-green-500/20">Local Test Mode</div>
+        </div>
+
+        <!-- Chat History -->
+        <div id="chat-history" class="h-[450px] overflow-y-auto p-6 space-y-4">
+            <div class="flex justify-start">
+                <div class="bg-zinc-900 border border-zinc-800 p-4 rounded-2xl rounded-tl-none max-w-[85%] text-sm">
+                    Chào <span id="user-name-display">bạn</span>! Mình đã sẵn sàng. Bạn muốn hỏi gì về dự án GroskAI không?
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="p-6 bg-black/20 border-t border-gray-800">
+            <div class="relative flex items-center">
+                <input type="text" id="user-input" 
+                    onkeypress="if(event.key === 'Enter') askAI()"
+                    class="w-full py-4 pl-5 pr-16 bg-zinc-900 border border-zinc-800 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm" 
+                    placeholder="Nhập câu hỏi tại đây...">
+                
+                <button type="button" onclick="askAI()" id="send-btn" aria-label="Gửi"
+                    class="absolute right-2 bg-blue-600 text-white p-2.5 rounded-xl hover:bg-blue-500 transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+<script>
+// ==================== RÚT GỌN ĐỊA CHỈ VÍ ====================
+function shortenAddress(address) {
+    if (!address || address.length < 10) return "bạn";
+    return address.substring(0, 6) + "..." + address.substring(address.length - 4);
+}
+
+// Cập nhật tên người dùng
+function updateUserName(address) {
+    const nameElement = document.getElementById('user-name-display');
+    if (nameElement) {
+        nameElement.innerText = shortenAddress(address);
+        nameElement.classList.add('text-blue-400', 'font-mono', 'mx-1');
+    }
+}
+
+// ==================== GỬI TIN NHẮN ====================
+async function askAI() {
+    const inputField = document.getElementById('user-input');
+    const history = document.getElementById('chat-history');
+    const btn = document.getElementById('send-btn');
+    const prompt = inputField.value.trim();
+
+    if (!prompt) return;
+
+    // Thêm tin nhắn người dùng
+    history.innerHTML += `
+        <div class="flex justify-end">
+            <div class="bg-blue-600 p-4 rounded-2xl rounded-tr-none max-w-[85%] text-sm shadow-lg">
+                ${prompt}
+            </div>
+        </div>`;
+    
+    inputField.value = "";
+    history.scrollTop = history.scrollHeight;
+    btn.disabled = true;
+
+    try {
+        const response = await fetch('http://localhost:3000/api/chat', {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ prompt })
+        });
+
+        const data = await response.json();
+
+        if (data.text) {
+            history.innerHTML += `
+                <div class="flex justify-start">
+                    <div class="bg-zinc-900 border border-zinc-800 p-4 rounded-2xl rounded-tl-none max-w-[85%] text-sm">
+                        ${data.text.replace(/\n/g, '<br>')}
+                    </div>
+                </div>`;
+        } else {
+            throw new Error(data.error || "Lỗi không xác định");
+        }
+    } catch (error) {
+    console.error(error);
+    history.innerHTML += `
+        <div class="flex justify-start">
+            <div class="bg-zinc-900 border border-red-800 p-4 rounded-2xl rounded-tl-none max-w-[85%] text-sm">
+                Hệ thống đang bận một chút. Bạn chờ 5-10 giây rồi thử lại nhé! 🔥
+            </div>
+        </div>`;
+} finally {
+        btn.disabled = false;
+        history.scrollTop = history.scrollHeight;
+    }
+}
+
+// ==================== NHẬN VÍ TỪ TRANG CHÍNH ====================
+window.addEventListener('message', function(event) {
+    if (event.data.type === 'WALLET_CONNECTED') {
+        const fullAddress = event.data.address;
+        updateUserName(fullAddress);
+        console.log("✅ Nhận ví thành công:", fullAddress);
+    }
+});
+
+// Tự động thử lấy ví khi load (dành cho test)
+window.addEventListener('load', () => {
+    if (window.ethereum) {
+        window.ethereum.request({ method: 'eth_accounts' })
+            .then(accounts => {
+                if (accounts.length > 0) {
+                    updateUserName(accounts[0]);
+                }
+            })
+            .catch(() => {});
+    }
+});
+</script>
+</body>
+</html>
